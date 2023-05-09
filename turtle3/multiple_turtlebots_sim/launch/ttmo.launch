@@ -1,0 +1,34 @@
+ <launch>
+  <!-- Environment --> 
+  <include file="$(find multiple_turtlebots_sim)/launch/simulation.launch">
+  </include>
+
+  <!-- Arguments -->
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+
+  <!-- TurtleBot3 -->
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
+    <arg name="model" value="$(arg model)"/>
+  </include>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="link_laser" args="-0.12 0 0 0 0 0 /ego_pose /laser" />
+
+  <!-- run the preset rviz -->
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find multiple_turtlebots_sim)/config/default.rviz" />
+ 
+
+ <!-- run the move_node -->
+ <!--
+ <node type="move" name="move" pkg="multiple_turtlebots_sim"/>
+-->
+
+ <!--datmo-->
+ <node pkg="datmo" type="datmo" name="datmo" output="screen" args="-d $(find datmo)/src/datmo.cpp">
+  <param name="lidar_frame" value="laser" />
+  <param name="world_frame" value="map" />
+  <param name="threshold_distance" value="0.2" />
+  <param name="euclidean_distance" value="0.25" />
+  <param name="pub_markers" value="true" />
+ </node>
+    
+</launch>

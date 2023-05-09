@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="multiple_turtlebots_sim" type="lidar" name="lidar" output="screen"/>
+
+</launch>
+

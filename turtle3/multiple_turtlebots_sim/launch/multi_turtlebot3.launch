@@ -1,0 +1,32 @@
+<launch>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find multiple_turtlebots_sim)/worlds/prog.world"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+    <!-- BEGIN ROBOT 1 -->
+    <group ns="robot1">
+        <param name="tf_prefix" value="robot1_tf"/>
+        <include file="$(find multiple_turtlebots_sim)/launch/one_robot.launch">
+            <arg name="init_pose" value="-x 2 -y 0 -z 0 -Y 3.14"/>
+            <arg name="robot_name" value="Robot1"/>
+        </include>
+    </group>
+
+    <!-- BEGIN ROBOT 2 -->
+    <group ns="robot2">
+        <param name="tf_prefix" value="robot2_tf"/>
+        <include file="$(find multiple_turtlebots_sim)/launch/one_robot.launch">
+            <arg name="init_pose" value="-x -2 -y 0 -z 0 -Y 0"/>
+            <arg name="robot_name" value="Robot2"/>
+        </include>
+    </group>
+
+    <node pkg="multiple_turtlebots_sim" type="move" name="move_pub" />
+
+</launch>
