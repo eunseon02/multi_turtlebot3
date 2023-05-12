@@ -4,7 +4,7 @@
     <group ns="robot1">
         <param name="tf_prefix" value="robot1_tf"/>
         <include file="$(find multiple_turtlebots_sim)/launch/one_robot.launch">
-            <arg name="init_pose" value="-x 2 -y 0 -z 0 -Y 3.14"/>
+            <arg name="init_pose" value="-x -1.04 -y -2.93 -z 0 -Y 3.14"/>
             <arg name="robot_name" value="Robot1"/>
         </include>
     </group>
@@ -13,7 +13,7 @@
     <group ns="robot2">
         <param name="tf_prefix" value="robot2_tf"/>
         <include file="$(find multiple_turtlebots_sim)/launch/one_robot.launch">
-            <arg name="init_pose" value="-x -2 -y 0 -z 0 -Y 0"/>
+            <arg name="init_pose" value="-x -1.99 -y -2.83 -z 0 -Y -2.87"/>
             <arg name="robot_name" value="Robot2"/>
         </include>
     </group>

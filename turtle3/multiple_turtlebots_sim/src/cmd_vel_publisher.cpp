@@ -1,7 +1,8 @@
 #include "ros/ros.h"
-#include "cmd_vel_pub/Cmd_vel_msg.h"
+#include "multiple_turtlebots_sim/Cmd_vel_msg.h"
   
-#define PUB_NODE_NAME "/robot1/cmd_vel" // name of node
+#define PUB_NODE_NAME "cmd_vel_publisher" // name of node
+#define SUB_NODE_NAME "cmd_vel_sub" // name of node
 #define TOPIC_NAME "cmd_vel_topic" // name of topic : cmd_vel_pub
  
 float vel_x, vel_y;
