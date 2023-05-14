@@ -143,9 +143,9 @@ add_executable(odom_listener
 src/odom.cpp 
 ) # 실행권한
 
-#add_executable(move_node
-#src/move.cpp
-#) # 실행권한
+add_executable(move_node
+src/move.cpp
+) # 실행권한
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -159,7 +159,7 @@ src/odom.cpp
 
 target_link_libraries(node ${catkin_LIBRARIES})
 target_link_libraries(odom_listener ${catkin_LIBRARIES})
-#target_link_libraries(move_node ${catkin_LIBRARIES})
+target_link_libraries(move_node ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############

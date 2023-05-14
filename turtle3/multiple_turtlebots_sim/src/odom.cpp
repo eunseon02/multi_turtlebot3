@@ -19,7 +19,7 @@ void messageCb(const nav_msgs::Odometry::ConstPtr& cmd_po){
 }
   
 int main(int argc, char **argv){
-    ros::init(argc, argv, "odom");
+    ros::init(argc, argv, "odom_listener");
     ros::NodeHandle nh;
   
     // ros::Subscriber cmd_vel_subscriber(TOPIC_NAME, messageCb);
