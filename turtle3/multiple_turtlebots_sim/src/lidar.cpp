@@ -8,7 +8,7 @@ Tmo::Tmo(){
     n_private.param("max_cluster_size", max_cluster_size, 360);
     n_private.param("threshold_distance", dth, 0.2);
 
-    sub_scan = n.subscribe("/scan", 1, &Tmo::callback, this);
+    sub_scan = n.subscribe("/tb3_0/scan", 1, &Tmo::callback, this);
     pub_marker_array   = n.advertise<visualization_msgs::MarkerArray>("datmo/marker_array", 10);
 }
 

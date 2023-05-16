@@ -14,6 +14,7 @@ find_package(catkin REQUIRED
             laser_geometry
             geometry_msgs
             nav_msgs
+            visualization_msgs
             )
 
 
@@ -76,6 +77,10 @@ find_package(catkin REQUIRED
 #    geometry_msgs
 #    std_msgs  # Or other packages containing msgs
 #  )
+generate_messages(
+    DEPENDENCIES
+    visualization_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -129,8 +134,9 @@ ${catkin_INCLUDE_DIRS}
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
@@ -146,6 +152,20 @@ src/odom.cpp
 add_executable(move_node
 src/move.cpp
 ) # 실행권한
+add_executable(lidar 
+src/main.cpp 
+src/lidar.cpp 
+src/clusters.cpp)
+add_executable(test_node
+src/test2.cpp
+) # 실행권한
+add_executable(test_node_t
+src/test.cpp
+) # 실행권한
+add_executable(test_node_tt
+src/test3.cpp
+) # 실행권한
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -160,6 +180,10 @@ src/move.cpp
 target_link_libraries(node ${catkin_LIBRARIES})
 target_link_libraries(odom_listener ${catkin_LIBRARIES})
 target_link_libraries(move_node ${catkin_LIBRARIES})
+target_link_libraries(lidar ${catkin_LIBRARIES})
+target_link_libraries(test_node ${catkin_LIBRARIES})
+target_link_libraries(test_node_t ${catkin_LIBRARIES})
+target_link_libraries(test_node_tt ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############

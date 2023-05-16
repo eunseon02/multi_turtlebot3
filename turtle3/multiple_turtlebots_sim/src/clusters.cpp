@@ -1,7 +1,7 @@
 #include "clusters.hpp"
 
 
-Clusters::Cluster(unsigned long int id, const pointList& points){
+Clusters::Clusters(unsigned long int id, const pointList& points){
     this->id = id;
     this->r = rand() / double(RAND_MAX);
     this->g = rand() / double(RAND_MAX);
