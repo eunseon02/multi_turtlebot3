@@ -1,0 +1,11 @@
+<launch>
+<!--datmo-->
+ <node pkg="multiple_turtlebots_sim" type="lidar" name="lidar" output="screen">
+  <param name="lidar_frame" value="base_foorprint" />
+  <param name="world_frame" value="laser" />
+  <param name="threshold_distance" value="0.2" />
+  <param name="euclidean_distance" value="0.25" />
+  <param name="pub_markers" value="true" />
+ </node>
+ 
+</launch>

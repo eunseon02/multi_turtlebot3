@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         visualization_msgs::Marker marker;
-        marker.header.frame_id = "base_map";
+        marker.header.frame_id = "j";
         marker.header.stamp = ros::Time::now();
 
         marker.ns = "my_namespace";
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
         marker.color.g = 1.0f;
         marker.color.b = 0.0f;
 
-        marker.lifetime = ros::Duration();
+        marker.lifetime = ros::Duration();  //?빼도 될까..
 
         // while (marker_pub.getNumSubscribers() < 1)
         // { 

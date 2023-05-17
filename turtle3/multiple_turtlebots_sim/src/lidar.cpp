@@ -7,9 +7,13 @@ Tmo::Tmo(){
     n_private.param("euclidean_distance", euclidean_distance, 0.25);
     n_private.param("max_cluster_size", max_cluster_size, 360);
     n_private.param("threshold_distance", dth, 0.2);
-
+    n_private.param("lidar_frame", lidar_frame, string("laser"));
+    n_private.param("world_frame", world_frame, string("map"));
+    
+    //ros::Rate r(30);
     sub_scan = n.subscribe("/tb3_0/scan", 1, &Tmo::callback, this);
-    pub_marker_array   = n.advertise<visualization_msgs::MarkerArray>("datmo/marker_array", 10);
+    pub_marker_array   = n.advertise<visualization_msgs::MarkerArray>("/marker_array", 10);
+    pub_marker  = n.advertise<visualization_msgs::Marker>("/marker", 10);
 }
 
 Tmo::~Tmo(){
@@ -25,17 +29,17 @@ void Tmo::callback(const sensor_msgs::LaserScan::ConstPtr& scan_in){
   markera.markers.push_back(marker);
   pub_marker_array.publish(markera);
 
-  if(tf_listener.canTransform(world_frame, lidar_frame, ros::Time())){
+  //if(tf_listener.canTransform(world_frame, lidar_frame, ros::Time())){
     
     vector<pointList> point_clusters_not_transformed;
     Tmo::Clustering(scan_in, point_clusters_not_transformed);   
 
     vector<pointList> point_clusters;
-
     vector<bool> g_matched(point_clusters.size(),false);   // The Group has been matched with a Cluster
     vector<bool> c_matched(clusters.size(),false); // The Cluster object has been matched with a group
 
-    double euclidean[point_clusters.size()][clusters.size()]; // Matrix object to save the euclidean distances
+    double euclidean[point_clusters.size()][clusters.size()]; 
+    // save the euclidean distances
 
     //Finding mean coordinates of group and associating with cluster Objects
     double mean_x = 0, mean_y = 0;
@@ -71,14 +75,13 @@ void Tmo::callback(const sensor_msgs::LaserScan::ConstPtr& scan_in){
         pairs.push_back(pair<int,int>(c,position));
       }
     }
-   
-
+    ROS_INFO("vis");
     visualiseGroupedPoints(point_clusters);
     
-  }
-  else{ //If the tf is not possible init all states at 0
-    ROS_WARN_DELAYED_THROTTLE(1 ,"No transform could be found between %s and %s", lidar_frame.c_str(), world_frame.c_str());
-  };
+  // }
+  // else{ //If the tf is not possible init all states at 0
+  //   ROS_WARN_DELAYED_THROTTLE(1 ,"No transform could be found between %s and %s", lidar_frame.c_str(), world_frame.c_str());
+  // };
 
 
 }
@@ -87,7 +90,7 @@ void Tmo::Clustering(const sensor_msgs::LaserScan::ConstPtr& scan_in, vector<poi
 
     scan = *scan_in;
 
-    int cpoints = 0; 
+    int cpoints = 0; //
 
     //Find the number of non inf laser scan values and save them in c_points
     for (unsigned int i = 0; i < scan.ranges.size(); ++i){
@@ -104,7 +107,7 @@ void Tmo::Clustering(const sensor_msgs::LaserScan::ConstPtr& scan_in, vector<poi
         polar[j][0] = scan.ranges[i]; //first column is the range 
         polar[j][1] = scan.angle_min + i*scan.angle_increment; //second angle in rad
         j++;
-    }
+      }
     }
 
     //Complete the circle
@@ -124,7 +127,6 @@ void Tmo::Clustering(const sensor_msgs::LaserScan::ConstPtr& scan_in, vector<poi
         double dtheta = polar[i+1][1]- polar[i][1];
         double adaptive = min(polar[i][0],polar[i+1][0]) * (sin(dth)) / (sin(l - (dth))) + s; //Dthreshold
         d = sqrt( pow(polar[i][0],2) + pow(polar[i+1][0],2)-2 * polar[i][0]*polar[i+1][0]*cos(polar[i+1][1] - polar[i][1]));
-
         if(d<dth) {
             clustered1[i] = true; //both points belong to clusters
             clustered2[i+1] = true;}
@@ -195,38 +197,72 @@ void Tmo::Clustering(const sensor_msgs::LaserScan::ConstPtr& scan_in, vector<poi
     }
 }
 void Tmo::visualiseGroupedPoints(const vector<pointList>& point_clusters){
-  visualization_msgs::MarkerArray marker_array;
-  //Populate grouped points message
-  visualization_msgs::Marker gpoints;
-  gpoints.header.frame_id = world_frame;
-  //gpoints.header.stamp = ros::Time::now();
-  gpoints.ns = "clustered_points";
-  //gpoints.action = visualization_msgs::Marker::ADD;
-  //gpoints.pose.orientation.w = 1.0;
-  //gpoints.type = visualization_msgs::Marker::POINTS;
-  // POINTS markers use x and y scale for width/height respectively
-  gpoints.scale.x = 0.04;
-  gpoints.scale.y = 0.04;
-  for(unsigned int i=0; i<point_clusters.size(); ++i){
 
-    gpoints.id = cg;
-    cg++;
-    gpoints.color.g = rand() / double(RAND_MAX);
-    gpoints.color.b = rand() / double(RAND_MAX);
-    gpoints.color.r = rand() / double(RAND_MAX);
-    gpoints.color.a = 0.0;
-    //gpoints.lifetime = ros::Duration(0.08);
-    for(unsigned int j=0; j<point_clusters[i].size(); ++j){
-      geometry_msgs::Point p;
-      p.x = point_clusters[i][j].first;
-      p.y = point_clusters[i][j].second;
-      p.z = 0;
-      gpoints.points.push_back(p);
+  ros::Rate r(30);
+  while (ros::ok())
+  {
+    visualization_msgs::MarkerArray marker_array;
+    visualization_msgs::Marker gpoints, marker;
+    gpoints.header.frame_id = "base_map";
+    marker.header.frame_id = "base_map";
+    gpoints.header.stamp = marker.header.stamp = ros::Time::now();
+    gpoints.ns = "clustered_point";
+    marker.ns = "cube";
+    gpoints.action = marker.action = visualization_msgs::Marker::ADD;
+    gpoints.pose.orientation.w = marker.pose.orientation.w = 1.0;
+
+    gpoints.type = visualization_msgs::Marker::POINTS;
+    marker.type = visualization_msgs::Marker::CUBE;  
+
+    // POINTS markers use x and y scale for width/height respectively
+    gpoints.scale.x = 0.04;
+    gpoints.scale.y = 0.04;
+
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+    for(unsigned int i=0; i<point_clusters.size(); ++i){
+
+      gpoints.id = cg;
+      marker.id = 0; 
+
+      cg++;
+      gpoints.color.g = rand() / double(RAND_MAX);
+      gpoints.color.b = rand() / double(RAND_MAX);
+      gpoints.color.r = rand() / double(RAND_MAX);
+
+      marker.color.a = 1.0; 
+      marker.color.r = 0.0f;
+      marker.color.g = 1.0f;
+      marker.color.b = 0.0f;
+      marker.lifetime = ros::Duration();
+
+      gpoints.color.a = 0.0;
+      //gpoints.lifetime = ros::Duration(0.08);
+      for(unsigned int j=0; j<point_clusters[i].size(); ++j){
+        geometry_msgs::Point p;
+        p.x = point_clusters[i][j].first;
+        p.y = point_clusters[i][j].second;
+        p.z = 0;
+        gpoints.points.push_back(p);
+      }
+      marker_array.markers.push_back(gpoints);
+      gpoints.points.clear();
     }
-    marker_array.markers.push_back(gpoints);
-    gpoints.points.clear();
+
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = 0.0;
+
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+
+    pub_marker_array.publish(marker_array);
+    pub_marker.publish(marker);
+    ROS_INFO("pub");
+
+    r.sleep();
   }
-  pub_marker_array.publish(marker_array);
-
 }
-

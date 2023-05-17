@@ -7,6 +7,10 @@ Panels:
         - /Global Options1
         - /Status1
         - /Marker1
+        - /MarkerArray1
+        - /TF1
+        - /TF1/Status1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 504
   - Class: rviz/Selection
@@ -54,17 +58,114 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /temp_marker
+      Marker Topic: /marker
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /marker_array
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        base_footprint:
+          Value: false
+        base_link:
+          Value: true
+        base_scan:
+          Value: false
+        caster_back_link:
+          Value: false
+        imu_link:
+          Value: false
+        odom:
+          Value: true
+        tb3_0/base_footprint:
+          Value: false
+        tb3_0/base_link:
+          Value: false
+        tb3_0/base_scan:
+          Value: false
+        tb3_0/caster_back_link:
+          Value: false
+        tb3_0/imu_link:
+          Value: false
+        tb3_0/wheel_left_link:
+          Value: false
+        tb3_0/wheel_right_link:
+          Value: false
+        tb3_1/base_footprint:
+          Value: false
+        tb3_1/base_link:
+          Value: false
+        tb3_1/base_scan:
+          Value: false
+        tb3_1/caster_back_link:
+          Value: false
+        tb3_1/imu_link:
+          Value: false
+        tb3_1/wheel_left_link:
+          Value: false
+        tb3_1/wheel_right_link:
+          Value: false
+      Marker Alpha: 1
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        odom:
+          base_footprint:
+            base_link:
+              base_scan:
+                {}
+              caster_back_link:
+                {}
+              imu_link:
+                {}
+        tb3_0/base_footprint:
+          tb3_0/base_link:
+            tb3_0/base_scan:
+              {}
+            tb3_0/caster_back_link:
+              {}
+            tb3_0/imu_link:
+              {}
+            tb3_0/wheel_left_link:
+              {}
+            tb3_0/wheel_right_link:
+              {}
+        tb3_1/base_footprint:
+          tb3_1/base_link:
+            tb3_1/base_scan:
+              {}
+            tb3_1/caster_back_link:
+              {}
+            tb3_1/imu_link:
+              {}
+            tb3_1/wheel_left_link:
+              {}
+            tb3_1/wheel_right_link:
+              {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: base_map
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -88,7 +189,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10
+      Distance: 1.5432955026626587
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -104,9 +205,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.785398006439209
+      Pitch: 0.39479681849479675
       Target Frame: <Fixed Frame>
-      Yaw: 0.785398006439209
+      Yaw: 4.560403823852539
     Saved: ~
 Window Geometry:
   Displays:
@@ -124,5 +225,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1277
-  X: 2409
-  Y: 310
+  X: 2008
+  Y: 196

@@ -37,6 +37,7 @@ private:
 
   ros::Subscriber sub_scan;
   ros::Publisher pub_marker_array; 
+  ros::Publisher pub_marker;
   vector<Clusters> clusters;
 
   //Tuning Parameteres
@@ -47,7 +48,7 @@ private:
 
   laser_geometry::LaserProjection projector_;
   sensor_msgs::LaserScan scan;
-  tf::TransformListener listener_;
+  tf::TransformListener tf_listener;
 
   unsigned long int cg       = 1;//group counter to be used as id of the clusters
   unsigned long int cclusters= 1;//counter for the cluster objects to be used as id for the markers
