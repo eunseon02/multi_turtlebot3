@@ -29,16 +29,20 @@ public:
   ~Tmo();
 
   void callback(const sensor_msgs::LaserScan::ConstPtr &);
-  void Clustering(const sensor_msgs::LaserScan::ConstPtr& , vector<pointList> &);
-  void visualiseGroupedPoints(const vector<pointList> &);
+  void Clustering(vector<pointList> &, vector< vector<float> > ,const int );
+  void visualiseGroupedPoints(const vector<pointList>& );
+  void LiDARmsg(const sensor_msgs::LaserScan::ConstPtr &);
+  void marker_test(void);
 
   tf::TransformListener tf_listener;
 private:
 
   ros::Subscriber sub_scan;
   ros::Publisher pub_marker_array; 
-  ros::Publisher pub_marker;
+  //ros::Publisher pub_marker;
+  ros::Publisher vis_pub;
   vector<Clusters> clusters;
+
 
   //Tuning Parameteres
   double dt;
@@ -48,7 +52,6 @@ private:
 
   laser_geometry::LaserProjection projector_;
   sensor_msgs::LaserScan scan;
-  tf::TransformListener tf_listener;
 
   unsigned long int cg       = 1;//group counter to be used as id of the clusters
   unsigned long int cclusters= 1;//counter for the cluster objects to be used as id for the markers
