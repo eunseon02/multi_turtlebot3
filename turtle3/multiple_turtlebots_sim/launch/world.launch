@@ -26,7 +26,7 @@
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_world.world"/>
     <arg name="paused" value="false"/>
-    <arg name="use_sim_time" value="true"/>
+    <arg name="use_sim_time" value="false"/>
     <arg name="gui" value="true"/>
     <arg name="headless" value="false"/>
     <arg name="debug" value="false"/>
@@ -63,7 +63,7 @@
   <!-- <node pkg="tf" type="static_transform_publisher" name="link_laser" args="0 0 0 0 0 0 0 /ego_pose /laser" /> -->
 
   <node pkg="tf" type="static_transform_publisher" name="link_laser"  args="-2.0 -0.5 0 1.57 0 0 /map /tb3_0/base_footprint 100"/>
-  <node pkg="tf" type="static_transform_publisher" name="link" args="2.0 -0.5 0 1.57 0 0 /map /tb3_1/base_footprint 100" /> -->
+  <node pkg="tf" type="static_transform_publisher" name="link" args="2.0 -0.5 0 1.57 0 0 /map /tb3_1/base_footprint 100" /> 
   <node pkg="tf" type="static_transform_publisher" name="link_world" args="0 0 0 0 0 0 /map /odom 100" />
 
 <!-- datmo

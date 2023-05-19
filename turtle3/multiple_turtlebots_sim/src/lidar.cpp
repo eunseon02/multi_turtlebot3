@@ -13,8 +13,10 @@ Tmo::Tmo(){
     //ros::Rate r(30);
     sub_scan = n.subscribe("/tb3_0/scan", 1, &Tmo::callback, this);
     pub_marker_array   = n.advertise<visualization_msgs::MarkerArray>("/tb3_0/marker_array", 100);
-    //pub_marker  = n.advertise<visualization_msgs::Marker>("/tb3_0/marker", 100);
-    vis_pub = n.advertise<visualization_msgs::Marker>("/temp_marker", 1);
+    pub_marker  = n.advertise<visualization_msgs::Marker>("/tb3_0/marker", 100);
+    clustering_res = n.advertise<geometry_msgs::Polygon>("clustering_result", 1000);
+    laser_callback = n.advertise<sensor_msgs::LaserScan>("laser_call", 100);
+    // vis_pub = n.advertise<visualization_msgs::Marker>("/temp_marker", 1);
 }
 
 Tmo::~Tmo(){
@@ -22,9 +24,30 @@ Tmo::~Tmo(){
 }
 
 void Tmo::callback(const sensor_msgs::LaserScan::ConstPtr& scan_in){
-  LiDARmsg(scan_in);
+
+
+  if (scan_in == nullptr) {
+        ROS_ERROR("Invalid laser scan data received");
+        return;
+    }
+
+    if (scan_in->ranges.empty()) {
+        ROS_ERROR("Empty laser scan data received");
+        return;
+    }
+
+    // 유효한 데이터가 할당되었으므로 계속 진행
+
+    LiDARmsg(scan_in);
+    //visualizeGroupedPoints(clusters, clustering_res);
+    ROS_INFO("callback");  
+
+  // sensor_msgs::LaserScan scannn;
+  // scannn = *scan_in;
+  // laser_callback.publish(scannn);
+
 }
-void::Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
+void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 
   // // delete all Markers 
   // visualization_msgs::Marker marker;
@@ -33,12 +56,12 @@ void::Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
   // markera.markers.push_back(marker);
   ///pub_marker_array.publish(markera);
 
-  if(tf_listener.canTransform(world_frame, lidar_frame, ros::Time())){
+  //if(tf_listener.canTransform(world_frame, lidar_frame, ros::Time())){
     
-    //transform : world -> lidar
-    tf::StampedTransform ego_pose; 
-    tf_listener.lookupTransform(world_frame, lidar_frame, ros::Time(0), ego_pose);
-
+    // //transform : world -> lidar
+    // tf::StampedTransform ego_pose; 
+    // tf_listener.lookupTransform(world_frame, lidar_frame, ros::Time(0), ego_pose);
+    ROS_INFO("liarmsg");
     vector<pointList> point_clusters_not_transformed;
 //-------------------
     scan = *scan_in;
@@ -81,6 +104,12 @@ void::Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 
 
     Tmo::Clustering(point_clusters_not_transformed, polar, c_points);   
+    // clusters 출력
+    // for (const auto& cluster : clusters)
+    // {
+    //   ROS_INFO("Cluster: %s", cluster.toString().c_str());
+    //   // Cluster의 toString() 메소드를 사용하여 원하는 형식으로 출력
+    // }
 //--------------------
     vector<pointList> point_clusters;
     vector<bool> cluster_group(point_clusters.size(),false);   
@@ -124,51 +153,23 @@ void::Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
         pairs.push_back(pair<int,int>(c,position));
       }
     }
-    //visualiseGroupedPoints(point_clusters);
-    marker_test();
-    
-  }
+    ROS_INFO("vis_ini");
 
-}
-void Tmo::marker_test(void){
+    ros::Rate rate(100);  // 10Hz 주기로 메시지 발행
 
-    while (ros::ok())
-    {
-        visualization_msgs::Marker marker;
-        marker.header.frame_id = "/my_map";
-        marker.header.stamp = ros::Time::now();
+    while (ros::ok()) {
+      // visualizeGroupedPoints 함수 호출
+      visualizeGroupedPoints(point_clusters, clustering_res);
 
-        marker.ns = "my_namespace";
-        marker.id = 0;
-
-        marker.type = visualization_msgs::Marker::CUBE;
-        marker.action = visualization_msgs::Marker::ADD;
-        marker.pose.position.x = 0.0;
-        marker.pose.position.y = 0.0;
-        marker.pose.position.z = 0.0;
-        marker.pose.orientation.w = 1.0;
-
-        marker.pose.orientation.x = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.z = 0.0;
-
-        marker.scale.x = 1.0;
-        marker.scale.y = 1.0;
-        marker.scale.z = 1.0;
-
-        marker.color.a = 1.0; 
-        marker.color.r = 0.0f;
-        marker.color.g = 1.0f;
-        marker.color.b = 0.0f;
-
-        marker.lifetime = ros::Duration();  //?빼도 될까..
-
-        vis_pub.publish(marker);
-        ROS_INFO("now");
-
+      // 루프 주기 대기
+      rate.sleep();
     }
+    
+  //}
+
 }
-void Tmo::Clustering(vector<pointList> &clusters, vector< vector<float> > polar, const int c_points){
+void Tmo::Clustering(vector<pointList> &clusters, vector< vector<float> > &polar, const int c_points){
+
 
 ///----------------------------------
   //////////////Adaptive Breakpoint Detector Algorithm//////////////////
@@ -259,75 +260,97 @@ void Tmo::Clustering(vector<pointList> &clusters, vector< vector<float> > polar,
 }
 
 
-// void Tmo::visualiseGroupedPoints(const vector<pointList>& point_clusters){
+void  Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters, ros::Publisher& clustering_res){
+  ROS_INFO("pub_vist");
 
-//   ros::Rate r(30);
-//   while (ros::ok())
-//   {
-//     visualization_msgs::MarkerArray marker_array;
-//     visualization_msgs::Marker gpoints, marker;
+  geometry_msgs::Polygon polygon_msg;
+  for (const auto& polygon : point_clusters)
+  {
+    ROS_INFO("GET IN");
+    for (const auto& point : polygon)
+    {
+      geometry_msgs::Point32 msg_point;
+      msg_point.x = point.first;
+      msg_point.y = point.second;
+      // z, w 값도 필요한 경우 설정 가능
+      polygon_msg.points.push_back(msg_point);
+      ROS_INFO("msg_point: (%f, %f)", msg_point.x, msg_point.y);
+    }
+  }
 
-//     gpoints.header.frame_id = "/map";
-//     marker.header.frame_id = "/map";
-//     gpoints.header.stamp = marker.header.stamp = ros::Time::now();
-//     gpoints.ns = "clustered_point";
-//     marker.ns = "cube";
-//     gpoints.action = marker.action = visualization_msgs::Marker::ADD;
-//     gpoints.pose.orientation.w = marker.pose.orientation.w = 1.0;
+  // 메시지 publish
+  clustering_res.publish(polygon_msg);
+  int num_subscribers = clustering_res.getNumSubscribers();
+  ROS_INFO("Number of subscribers: %d", num_subscribers);
 
-//     gpoints.type = visualization_msgs::Marker::POINTS;
-//     marker.type = visualization_msgs::Marker::CUBE;  
 
-//     // POINTS markers use x and y scale for width/height respectively
-//     gpoints.scale.x = 0.04;
-//     gpoints.scale.y = 0.04;
+  // ros::Rate r(30);
+  // while (ros::ok())
+  // {
+  //   visualization_msgs::MarkerArray marker_array;
+  //   visualization_msgs::Marker gpoints, marker;
 
-//     marker.scale.x = 1.0;
-//     marker.scale.y = 1.0;
-//     marker.scale.z = 1.0;
+  //   gpoints.header.frame_id = "/map";
+  //   marker.header.frame_id = "/map";
+  //   gpoints.header.stamp = marker.header.stamp = ros::Time::now();
+  //   gpoints.ns = "clustered_point";
+  //   marker.ns = "cube";
+  //   gpoints.action = marker.action = visualization_msgs::Marker::ADD;
+  //   gpoints.pose.orientation.w = marker.pose.orientation.w = 1.0;
 
-//     for(unsigned int i=0; i<point_clusters.size(); ++i){
+  //   gpoints.type = visualization_msgs::Marker::POINTS;
+  //   marker.type = visualization_msgs::Marker::CUBE;  
 
-//       gpoints.id = cg;
-//       marker.id = 0; 
+  //   // POINTS markers use x and y scale for width/height respectively
+  //   gpoints.scale.x = 0.04;
+  //   gpoints.scale.y = 0.04;
 
-//       cg++;
-//       gpoints.color.g = rand() / double(RAND_MAX);
-//       gpoints.color.b = rand() / double(RAND_MAX);
-//       gpoints.color.r = rand() / double(RAND_MAX);
+  //   marker.scale.x = 1.0;
+  //   marker.scale.y = 1.0;
+  //   marker.scale.z = 1.0;
 
-//       marker.color.a = 1.0; 
-//       marker.color.r = 0.0f;
-//       marker.color.g = 1.0f;
-//       marker.color.b = 0.0f;
-//       marker.lifetime = ros::Duration();
-//       gpoints.lifetime = ros::Duration();
+  //   for(unsigned int i=0; i<point_clusters.size(); ++i){
 
-//       gpoints.color.a = 0.0;
-//       //gpoints.lifetime = ros::Duration(0.08);
-//       for(unsigned int j=0; j<point_clusters[i].size(); ++j){
-//         geometry_msgs::Point p;
-//         p.x = point_clusters[i][j].first;
-//         p.y = point_clusters[i][j].second;
-//         p.z = 0;
-//         gpoints.points.push_back(p);
-//       }
-//       marker_array.markers.push_back(gpoints);
-//       gpoints.points.clear();
-//     }
+  //     gpoints.id = cg;
+  //     marker.id = 0; 
 
-//     marker.pose.position.x = 0.0;
-//     marker.pose.position.y = 0.0;
-//     marker.pose.position.z = 0.0;
+  //     cg++;
+  //     gpoints.color.g = rand() / double(RAND_MAX);
+  //     gpoints.color.b = rand() / double(RAND_MAX);
+  //     gpoints.color.r = rand() / double(RAND_MAX);
 
-//     marker.pose.orientation.x = 0.0;
-//     marker.pose.orientation.y = 0.0;
-//     marker.pose.orientation.z = 0.0;
+  //     marker.color.a = 1.0; 
+  //     marker.color.r = 0.0f;
+  //     marker.color.g = 1.0f;
+  //     marker.color.b = 0.0f;
+  //     marker.lifetime = ros::Duration();
+  //     gpoints.lifetime = ros::Duration();
 
-//     pub_marker.publish(marker);
-//     ROS_INFO("pub");
-//     pub_marker_array.publish(marker_array);
+  //     gpoints.color.a = 0.0;
+  //     //gpoints.lifetime = ros::Duration(0.08);
+  //     for(unsigned int j=0; j<point_clusters[i].size(); ++j){
+  //       geometry_msgs::Point p;
+  //       p.x = point_clusters[i][j].first;
+  //       p.y = point_clusters[i][j].second;
+  //       p.z = 0;
+  //       gpoints.points.push_back(p);
+  //     }
+  //     marker_array.markers.push_back(gpoints);
+  //     gpoints.points.clear();
+  //   }
 
-//     r.sleep();
-//   }
-// }
+  //   marker.pose.position.x = 0.0;
+  //   marker.pose.position.y = 0.0;
+  //   marker.pose.position.z = 0.0;
+
+  //   marker.pose.orientation.x = 0.0;
+  //   marker.pose.orientation.y = 0.0;
+  //   marker.pose.orientation.z = 0.0;
+
+  //   pub_marker.publish(marker);
+  //   ROS_INFO("pub");
+  //   pub_marker_array.publish(marker_array);
+
+  //   r.sleep();
+  // }
+}

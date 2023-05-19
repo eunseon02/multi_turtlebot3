@@ -170,9 +170,17 @@ src/test2.cpp
 add_executable(test_node_tt
 src/test3.cpp
 ) # 실행권한
-
+add_executable(visualization_node
+src/publish_test.cpp
+) # 실행권한
 add_executable(points_marker_node
 src/points_marker.cpp
+) # 실행권한
+add_executable(vis_node
+src/poly_sub-1.cpp
+) # 실행권한
+add_executable(listener
+src/clustering_res.cpp
 ) # 실행권한
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -192,7 +200,10 @@ target_link_libraries(lidar ${catkin_LIBRARIES})
 target_link_libraries(test_node ${catkin_LIBRARIES})
 # target_link_libraries(test_node_t ${catkin_LIBRARIES})
 target_link_libraries(test_node_tt ${catkin_LIBRARIES})
+target_link_libraries(visualization_node ${catkin_LIBRARIES})
 target_link_libraries(points_marker_node ${catkin_LIBRARIES})
+target_link_libraries(vis_node ${catkin_LIBRARIES})
+target_link_libraries(listener ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############

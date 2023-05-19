@@ -14,11 +14,15 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <vector>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
+#include <geometry_msgs/Polygon.h>
+
 
 #include "clusters.hpp"
 
 typedef std::pair<double, double> Point;
 typedef std::vector<Point> pointList;
+
 
 using namespace std;
 
@@ -29,18 +33,20 @@ public:
   ~Tmo();
 
   void callback(const sensor_msgs::LaserScan::ConstPtr &);
-  void Clustering(vector<pointList> &, vector< vector<float> > ,const int );
-  void visualiseGroupedPoints(const vector<pointList>& );
+  void Clustering(vector<pointList> &, vector< vector<float> >& ,const int );
+  void visualizeGroupedPoints(const std::vector<pointList>& point_clusters, ros::Publisher& clustering_res);
   void LiDARmsg(const sensor_msgs::LaserScan::ConstPtr &);
-  void marker_test(void);
+
 
   tf::TransformListener tf_listener;
 private:
 
   ros::Subscriber sub_scan;
   ros::Publisher pub_marker_array; 
-  //ros::Publisher pub_marker;
-  ros::Publisher vis_pub;
+  ros::Publisher pub_marker;
+  ros::Publisher clustering_res;
+  ros::Publisher laser_callback;
+  // ros::Publisher vis_pub;
   vector<Clusters> clusters;
 
 
@@ -52,6 +58,7 @@ private:
 
   laser_geometry::LaserProjection projector_;
   sensor_msgs::LaserScan scan;
+
 
   unsigned long int cg       = 1;//group counter to be used as id of the clusters
   unsigned long int cclusters= 1;//counter for the cluster objects to be used as id for the markers

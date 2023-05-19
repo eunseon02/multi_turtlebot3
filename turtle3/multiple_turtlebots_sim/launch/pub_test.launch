@@ -1,0 +1,3 @@
+<launch>
+ <node type="publish_test.cpp" name="visualization_node" pkg="multiple_turtlebots_sim" output="screen" args="-d $(find multiple_turtlebots_sim)/src/publish_test.cpp"/>
+</launch>
