@@ -4,8 +4,8 @@
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "lidar");
-    
-    Tmo t;
+    ROS_INFO("main");  
+    //Tmo t;
     
     cout << "succsessssss";
 

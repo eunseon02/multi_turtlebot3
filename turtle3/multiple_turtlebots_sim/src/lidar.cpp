@@ -10,11 +10,11 @@ Tmo::Tmo(){
     n_private.param("lidar_frame", lidar_frame, string("laser"));
     n_private.param("world_frame", world_frame, string("map"));
     
-    //ros::Rate r(30);
-    sub_scan = n.subscribe("/tb3_0/scan", 1, &Tmo::callback, this);
+    ros::Rate r(30);
+    sub_scan = n.subscribe("/robot_1/scan", 1, &Tmo::callback, this);
     pub_marker_array   = n.advertise<visualization_msgs::MarkerArray>("/tb3_0/marker_array", 100);
     pub_marker  = n.advertise<visualization_msgs::Marker>("/tb3_0/marker", 100);
-    clustering_res = n.advertise<geometry_msgs::Polygon>("clustering_result", 1000);
+    //clustering_res = n.advertise<geometry_msgs::Polygon>("clustering_result", 1000);
     laser_callback = n.advertise<sensor_msgs::LaserScan>("laser_call", 100);
     // vis_pub = n.advertise<visualization_msgs::Marker>("/temp_marker", 1);
 }
@@ -25,26 +25,26 @@ Tmo::~Tmo(){
 
 void Tmo::callback(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 
+  ROS_INFO("callback");  
+  // if (scan_in == nullptr) {
+  //       ROS_ERROR("Invalid laser scan data received");
+  //       return;
+  //   }
 
-  if (scan_in == nullptr) {
-        ROS_ERROR("Invalid laser scan data received");
-        return;
-    }
+  //   if (scan_in->ranges.empty()) {
+  //       ROS_ERROR("Empty laser scan data received");
+  //       return;
+  //   }
 
-    if (scan_in->ranges.empty()) {
-        ROS_ERROR("Empty laser scan data received");
-        return;
-    }
+  // 유효한 데이터가 할당되었으므로 계속 진행
 
-    // 유효한 데이터가 할당되었으므로 계속 진행
-
-    LiDARmsg(scan_in);
-    //visualizeGroupedPoints(clusters, clustering_res);
-    ROS_INFO("callback");  
-
-  // sensor_msgs::LaserScan scannn;
-  // scannn = *scan_in;
-  // laser_callback.publish(scannn);
+  LiDARmsg(scan_in);
+  //visualizeGroupedPoints(clusters, clustering_res);
+  while (ros::ok()) {
+    laser_callback.publish(scan_in);
+    // 루프 주기 대기
+    rate.sleep();
+  }
 
 }
 void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
@@ -153,7 +153,7 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
         pairs.push_back(pair<int,int>(c,position));
       }
     }
-    ROS_INFO("vis_ini");
+    //ROS_INFO("vis_ini");
 
     ros::Rate rate(100);  // 10Hz 주기로 메시지 발행
 
@@ -261,7 +261,7 @@ void Tmo::Clustering(vector<pointList> &clusters, vector< vector<float> > &polar
 
 
 void  Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters, ros::Publisher& clustering_res){
-  ROS_INFO("pub_vist");
+  // ROS_INFO("pub_vist");
 
   geometry_msgs::Polygon polygon_msg;
   for (const auto& polygon : point_clusters)
@@ -278,10 +278,10 @@ void  Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters, 
     }
   }
 
-  // 메시지 publish
-  clustering_res.publish(polygon_msg);
-  int num_subscribers = clustering_res.getNumSubscribers();
-  ROS_INFO("Number of subscribers: %d", num_subscribers);
+  // // 메시지 publish
+  // clustering_res.publish(polygon_msg);
+  // int num_subscribers = clustering_res.getNumSubscribers();
+  // ROS_INFO("Number of subscribers: %d", num_subscribers);
 
 
   // ros::Rate r(30);

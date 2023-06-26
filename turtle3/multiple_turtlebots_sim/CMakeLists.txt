@@ -147,7 +147,6 @@ ${catkin_INCLUDE_DIRS}
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(node
 src/main.cpp 
-src/lidar.cpp
 ) # 실행권한
 
 add_executable(odom_listener
@@ -159,8 +158,7 @@ src/move.cpp
 ) # 실행권한
 add_executable(lidar 
 src/main.cpp 
-src/lidar.cpp 
-src/clusters.cpp)
+)
 add_executable(test_node
 src/test2.cpp
 ) # 실행권한
