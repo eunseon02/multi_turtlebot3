@@ -158,6 +158,7 @@ src/move.cpp
 ) # 실행권한
 add_executable(lidar 
 src/main.cpp 
+src/lidar.cpp
 )
 add_executable(test_node
 src/test2.cpp
@@ -165,16 +166,16 @@ src/test2.cpp
 # add_executable(test_node_t
 # src/test.cpp
 # ) # 실행권한
-add_executable(test_node_tt
-src/test3.cpp
-) # 실행권한
-add_executable(visualization_node
-src/publish_test.cpp
+# add_executable(test_node_tt
+# src/test3.cpp
+# ) # 실행권한
+add_executable(polygon_publish_node
+src/polygon_publish.cpp
 ) # 실행권한
 add_executable(points_marker_node
 src/points_marker.cpp
 ) # 실행권한
-add_executable(vis_node
+add_executable(polygon_subscribe_node
 src/poly_sub-1.cpp
 ) # 실행권한
 add_executable(listener
@@ -197,10 +198,10 @@ target_link_libraries(move_node ${catkin_LIBRARIES})
 target_link_libraries(lidar ${catkin_LIBRARIES})
 target_link_libraries(test_node ${catkin_LIBRARIES})
 # target_link_libraries(test_node_t ${catkin_LIBRARIES})
-target_link_libraries(test_node_tt ${catkin_LIBRARIES})
-target_link_libraries(visualization_node ${catkin_LIBRARIES})
+# target_link_libraries(test_node_tt ${catkin_LIBRARIES})
+target_link_libraries(polygon_publish_node ${catkin_LIBRARIES})
 target_link_libraries(points_marker_node ${catkin_LIBRARIES})
-target_link_libraries(vis_node ${catkin_LIBRARIES})
+target_link_libraries(polygon_subscribe_node ${catkin_LIBRARIES})
 target_link_libraries(listener ${catkin_LIBRARIES})
 #############
 ## Install ##

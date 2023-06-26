@@ -12,7 +12,6 @@ int main(int argc, char **argv)
     ros::Publisher vis_pub = n.advertise<visualization_msgs::Marker>("/temp_marker", 1);
 
     //uint32_t shape = visualization_msgs::Marker::CUBE;
-
     while (ros::ok())
     {
         visualization_msgs::Marker marker;
@@ -38,11 +37,11 @@ int main(int argc, char **argv)
         marker.scale.z = 1.0;
 
         marker.color.a = 1.0; 
-        marker.color.r = 0.0f;
-        marker.color.g = 1.0f;
-        marker.color.b = 0.0f;
+        marker.color.r = rand() / double(RAND_MAX);
+        marker.color.g = rand() / double(RAND_MAX);
+        marker.color.b = rand() / double(RAND_MAX);
 
-        marker.lifetime = ros::Duration();  //?빼도 될까..
+        marker.lifetime = ros::Duration(); 
 
         // while (marker_pub.getNumSubscribers() < 1)
         // { 
@@ -73,6 +72,6 @@ int main(int argc, char **argv)
         //         break;
         // }
 
-    //r.sleep();
+
     }
 }

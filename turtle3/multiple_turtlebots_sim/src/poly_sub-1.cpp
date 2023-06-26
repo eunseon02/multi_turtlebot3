@@ -13,7 +13,7 @@ void polygonCallback(const geometry_msgs::Polygon::ConstPtr& msg)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "vis_node");
+  ros::init(argc, argv, "polygon_subscribe_node");
   ros::NodeHandle nh("~");
 
   // ...

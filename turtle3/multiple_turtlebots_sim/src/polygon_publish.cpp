@@ -38,7 +38,7 @@ void visualizeGroupedPoints(const std::vector<pointList>& point_clusters, ros::P
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "visualization_node");
+  ros::init(argc, argv, "polygon_publish_node");
   ros::NodeHandle nh;
 
   // Publisher 생성

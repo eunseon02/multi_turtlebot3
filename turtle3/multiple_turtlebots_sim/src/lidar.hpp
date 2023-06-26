@@ -34,7 +34,7 @@ public:
 
   void callback(const sensor_msgs::LaserScan::ConstPtr &);
   void Clustering(vector<pointList> &, vector< vector<float> >& ,const int );
-  void visualizeGroupedPoints(const std::vector<pointList>& point_clusters, ros::Publisher& clustering_res);
+  void visualizeGroupedPoints(const std::vector<pointList>& point_clusters);
   void LiDARmsg(const sensor_msgs::LaserScan::ConstPtr &);
 
 
@@ -43,11 +43,11 @@ private:
 
   ros::Subscriber sub_scan;
   ros::Publisher pub_marker_array; 
-  ros::Publisher pub_marker;
   ros::Publisher clustering_res;
   ros::Publisher laser_callback;
   // ros::Publisher vis_pub;
   vector<Clusters> clusters;
+  vector<pointList> point_clusters;
 
 
   //Tuning Parameteres
