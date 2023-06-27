@@ -19,12 +19,15 @@ public:
 
     //void update(const pointList&);
 
+    void update(const pointList&);
+
     std::pair<double, double> mean() { return mean_values; }; //Return mean of cluster.
     double meanX() { return mean_values.first; };
     double meanY() { return mean_values.second;};
 
 private:
   std::pair<double, double> mean_values;
+  void calcMean(const pointList& ); //Find the mean value of the cluster
 };
 
 #endif

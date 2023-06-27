@@ -7,7 +7,7 @@ int main(int argc, char **argv){
   ros::NodeHandle nh;
   geometry_msgs::Twist cmd_vel; // variable to publish
   
-  ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("/robot1/cmd_vel", 100, true);
+  ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("/robot_2/cmd_vel", 100, true);
   while(ros::ok())
   {
     cmd_vel.linear.x =20;

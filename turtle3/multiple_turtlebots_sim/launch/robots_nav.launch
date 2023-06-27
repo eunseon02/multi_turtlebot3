@@ -1,0 +1,12 @@
+<launch>
+
+    <!-- BEGIN ROBOT 1 -->
+    <group ns = "robot_1">
+        <param name="tf_prefix" value="robot_1"/>
+        <include file="$(find multiple_turtlebots_sim)/launch/one_robot.launch">
+            <arg name="init_pose" value="-x -1.0 -y -2.5 -z 0.0 -Y 3.15"/>
+            <arg name="robot_name" value="robot_1"/>
+        </include>
+    </group>
+
+</launch>

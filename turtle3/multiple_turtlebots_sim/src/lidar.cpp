@@ -49,20 +49,8 @@ void Tmo::callback(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 }
 void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 
-  // // delete all Markers 
-  // visualization_msgs::Marker marker;
-  // visualization_msgs::MarkerArray markera;
-  // marker.action =3;
-  // markera.markers.push_back(marker);
-  ///pub_marker_array.publish(markera);
-
-  //if(tf_listener.canTransform(world_frame, lidar_frame, ros::Time())){
-    
-    // //transform : world -> lidar
-    // tf::StampedTransform ego_pose; 
-    // tf_listener.lookupTransform(world_frame, lidar_frame, ros::Time(0), ego_pose);
     ROS_INFO("liarmsg");
-    vector<pointList> point_clusters_not_transformed;
+    
 //-------------------
     scan = *scan_in;
 
@@ -102,69 +90,106 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
     //Complete the circle
     polar[c_points] = polar[0];
 
-
+    vector<pointList> point_clusters_not_transformed;
     Tmo::Clustering(point_clusters_not_transformed, polar, c_points);   
-    // clusters 출력
-
-//--------------------
-    // vector<pointList> point_clusters;
-    // vector<bool> cluster_group(point_clusters.size(),false);   
-    // vector<bool> c_matched(clusters.size(),false);
-
-    // double euclidean[point_clusters.size()][clusters.size()]; 
-    // // save the euclidean distances
-
-    // //Finding mean coordinates of group and associating with cluster Objects
-    // double mean_x = 0, mean_y = 0;
-
-    // for(unsigned int g = 0; g<point_clusters.size();++g){
-    //   double sum_x = 0, sum_y = 0;
     
-    //   for(unsigned int l =0; l<point_clusters[g].size(); l++){
-    //     sum_x = sum_x + point_clusters[g][l].first;
-    //     sum_y = sum_y + point_clusters[g][l].second;
-    //     std::ostringstream oss;
-    //     oss << point_clusters[g][l].first << ", " << point_clusters[g][l].second;
-    //     ROS_INFO("%s", oss.str().c_str());
-    //   }
-    //   mean_x = sum_x / point_clusters[g].size();
-    //   mean_y = sum_y / point_clusters[g].size();
 
-    //   for(unsigned int c=0;c<clusters.size();++c){
-    //     euclidean[g][c] = abs( mean_x - clusters[c].meanX()) + abs(mean_y - clusters[c].meanY()); 
-    //   }
-    // }
+//--------------------update adaptive threshold distance
+    vector<pointList> point_clusters;
+    vector<bool> cluster_group(point_clusters.size(),false);   
+    vector<bool> c_matched(clusters.size(),false);
 
+    double euclidean[point_clusters.size()][clusters.size()]; 
+    // save the euclidean distances
 
+    //Finding mean coordinates of group and associating with cluster Objects
+    double mean_x = 0, mean_y = 0;
+
+    for(unsigned int g = 0; g<point_clusters.size();++g){
+      double sum_x = 0, sum_y = 0;
     
-    // vector<pair <int,int>> pairs;
-    // for(unsigned int c=0; c<clusters.size();++c){
-    //   unsigned int position;
-    //   double min_distance = euclidean_distance;
-    //   //Find the smallest euclidean distance
-    //   for(unsigned int g=0; g<point_clusters.size();++g){
-    //   if(euclidean[g][c] < min_distance){ 
-    //         min_distance = euclidean[g][c];
-    //         position = g;
-    //   }
-    //   }
-    //   if(min_distance < euclidean_distance){  //associate if smaller than the threshold 
-    //     cluster_group[position] = true, c_matched[c] = true;
-    //     pairs.push_back(pair<int,int>(c,position));
-    //   }
-    // }
-    ROS_INFO("vis_ini");
+      for(unsigned int l =0; l<point_clusters[g].size(); l++){
+        sum_x = sum_x + point_clusters[g][l].first;
+        sum_y = sum_y + point_clusters[g][l].second;
+        std::ostringstream oss;
+        oss << point_clusters[g][l].first << ", " << point_clusters[g][l].second;
+        ROS_INFO("%s", oss.str().c_str());
+      }
+      mean_x = sum_x / point_clusters[g].size();
+      mean_y = sum_y / point_clusters[g].size();
 
+      for(unsigned int c=0;c<clusters.size();++c){
+        euclidean[g][c] = abs( mean_x - clusters[c].meanX()) + abs(mean_y - clusters[c].meanY()); 
+      }
+    }
+//-------------------------------
+//-----------------------------Tracking
+
+
+    // 점들 간 최소 거리 < 클러스터 내부 점들 간 최대 거리인 경우 같은 클러스터
+    vector<pair <int,int>> pairs;
+    for(unsigned int c=0; c<clusters.size();++c){
+      unsigned int position;
+      double min_distance = euclidean_distance;
+
+      for(unsigned int g=0; g<point_clusters.size();++g){      // smallest euclidean distance
+      if(euclidean[g][c] < min_distance){ 
+            min_distance = euclidean[g][c];
+            position = g;
+      }
+      }
+      if(min_distance < euclidean_distance){ //point inside cluster  
+        cluster_group[position] = true, c_matched[c] = true;
+        pairs.push_back(pair<int,int>(c,position));
+      }
+  
+    }
+
+    //Update Clusters
+    #pragma omp parallel for
+    for(unsigned int p=0; p<pairs.size();++p){
+      clusters[pairs[p].first].update(point_clusters[pairs[p].second]);
+    }
+       
+    //Delete Clusters
+    unsigned int o=0;
+    unsigned int p = clusters.size();
+    while(o<p){
+      if(c_matched[o] == false){
+        //순서 맨 뒤로 바꿔서 제거
+        std::swap(clusters[o], clusters.back());
+        clusters.pop_back();
+
+        std::swap(c_matched[o], c_matched.back());
+        c_matched.pop_back();
+
+        o--;
+        p--; //제거할 point
+      }
+    o++;
+    }
+
+    // Initialisation of new Cluster Objects
+    for(unsigned int i=0; i<point_clusters.size();++i){
+      if(cluster_group[i] == false && point_clusters[i].size()< max_cluster_size){
+        Clusters cl(cclusters, point_clusters[i]);
+        cclusters++;
+        clusters.push_back(cl);
+      } 
+    }
+    
+
+    // ROS_INFO("vis_ini");
     // //cluster info
     // for (size_t i = 0; i < point_clusters.size(); ++i) {
     //   ROS_INFO_STREAM("Cluster " << i << ":");
     //   for (const auto& point : point_clusters[i]) {
-    //     ROS_INFO_STREAM(" Point: x=" << point.first << ", y=" << point.second<<"병신");
+    //     ROS_INFO_STREAM(" Point: x=" << point.first << ", y=" << point.second);
     //   }
     // }
 
 
-    // visualizeGroupedPoints(point_clusters);
+    visualizeGroupedPoints(Tmo::point_clusters);
 
 
 }
@@ -258,6 +283,19 @@ ROS_INFO("clustering");
       ++j;
   }
   clusters.push_back(cluster);
+  Tmo::point_clusters = clusters;
+
+
+  //new cluster
+
+
+  //delete cluster
+
+
+  //add points
+
+
+
   //cluster info
   // for (size_t i = 0; i < clusters.size(); ++i) {
   //   ROS_INFO_STREAM("Cluster " << i << ":");
@@ -266,8 +304,6 @@ ROS_INFO("clustering");
   //   }
   // }
 
-
-
   //cluster info
   // ROS_INFO("Cluster %d:", i + 1);
   // for (const auto& point : cluster) {
@@ -275,7 +311,7 @@ ROS_INFO("clustering");
   // }
   // }
 
-  visualizeGroupedPoints(clusters);
+  //visualizeGroupedPoints(clusters);
 }
 }
 
@@ -317,6 +353,7 @@ void Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters){
   // ROS_INFO("Number of subscribers: %d", num_subscribers);
   //ros::Rate r(30);
 
+  // while(ros::ok()){
   visualization_msgs::MarkerArray marker_array;
 
   for(unsigned int i=0; i<point_clusters.size(); ++i){

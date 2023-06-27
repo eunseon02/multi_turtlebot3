@@ -1,0 +1,44 @@
+<launch>
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    
+    <arg name="bag" />
+    <param name="use_sim_time" value="true" />
+
+    <node pkg="rosbag" type="play" name="player" required="true" output="screen" args=" -r 1 --clock $(find multiple_turtlebots_sim)/bag/2023-06-27-15-29-28.bag"/>
+
+    <arg name="map_file" default="$(find multiple_turtlebots_sim)/map/map.yaml"/>
+    <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find multiple_turtlebots_sim)/worlds/datmo.world"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="false"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+ 
+    <include file="$(find multiple_turtlebots_sim)/launch/robots2.launch"/>
+
+<!--Rviz -->
+    <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
+        <arg name="model" value="$(arg model)"/>
+    </include>
+
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find multiple_turtlebots_sim)/rviz/track.rviz" />
+
+    <node pkg="tf" type="static_transform_publisher" name="link_laser"  args="0 0 0 0 0 0 /map /robot_1/odom 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="link" args="0 0 0 0 0 0 /map /robot_2/odom 100" /> 
+    <node pkg="tf" type="static_transform_publisher" name="link_world" args="0 0 0 0 0 0 /map /base_footprint 100" />
+
+<!---
+    <node pkg="multiple_turtlebots_sim" type="lidar" name="lidar" output="screen">
+        <param name="lidar_frame" value="base_foorprint" />
+        <param name="threshold_distance" value="0.2" />
+        <param name="euclidean_distance" value="0.25" />
+        <param name="pub_markers" value="true" />
+    </node>
+    -->
+
+</launch>
