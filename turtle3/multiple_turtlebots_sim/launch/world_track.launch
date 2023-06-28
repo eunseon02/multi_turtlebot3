@@ -4,7 +4,7 @@
     <arg name="bag" />
     <param name="use_sim_time" value="true" />
 
-    <node pkg="rosbag" type="play" name="player" required="true" output="screen" args=" -r 1 --clock $(find multiple_turtlebots_sim)/bag/2023-06-27-15-29-28.bag"/>
+    <node pkg="rosbag" type="play" name="player" required="true" output="screen" args=" -r 1 --clock $(find multiple_turtlebots_sim)/bag/2023-06-28-00-15-18.bag"/>
 
     <arg name="map_file" default="$(find multiple_turtlebots_sim)/map/map.yaml"/>
     <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>

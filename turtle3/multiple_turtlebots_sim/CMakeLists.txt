@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(multiple_turtlebots_sim)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -15,8 +15,7 @@ find_package(catkin REQUIRED
             geometry_msgs
             nav_msgs
             visualization_msgs
-            pcl_conversions
-            pcl_ros
+            message_generation
             )
 
 
@@ -79,10 +78,7 @@ find_package(catkin REQUIRED
 #    geometry_msgs
 #    std_msgs  # Or other packages containing msgs
 #  )
-generate_messages(
-    DEPENDENCIES
-    visualization_msgs
-)
+
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -103,7 +99,17 @@ generate_messages(
 #   cfg/DynReconf1.cfg
 #   cfg/DynReconf2.cfg
 # )
-
+add_message_files(
+  FILES
+  Track.msg
+  TrackArray.msg
+)
+generate_messages(
+  DEPENDENCIES
+  nav_msgs
+  std_msgs
+  visualization_msgs
+)
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -115,9 +121,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     INCLUDE_DIRS
-    CATKIN_DEPENDS  roscpp
-                    pcl_conversions
-                    pcl_ros
+    CATKIN_DEPENDS  roscpp message_runtime
 )
 
 ###########
@@ -158,9 +162,10 @@ ${catkin_INCLUDE_DIRS}
 # ) # 실행권한
 add_executable(lidar 
     src/lidar.cpp
-    src/main.cpp 
     src/clusters.cpp
+    src/main.cpp    
 )
+
 # add_executable(test_node
 # src/test2.cpp
 # ) # 실행권한
@@ -187,7 +192,7 @@ add_executable(lidar
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
-
+#add_dependencies(multiple_turtlebots_sim ${catkin_EXPORTED_TARGETS} track_generate_messages_cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 

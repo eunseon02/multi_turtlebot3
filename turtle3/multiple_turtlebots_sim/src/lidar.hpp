@@ -2,6 +2,7 @@
 #define LIDARKK
 
 #include "lidar.hpp"
+#include "clusters.hpp"
 
 #include <ros/ros.h>
 #include <iostream>
@@ -17,12 +18,11 @@
 #include <geometry_msgs/Point32.h>
 #include <geometry_msgs/Polygon.h>
 
-
-#include "clusters.hpp"
+#include <multiple_turtlebots_sim/TrackArray.h>
+#include <multiple_turtlebots_sim/Track.h>
 
 typedef std::pair<double, double> Point;
 typedef std::vector<Point> pointList;
-
 
 using namespace std;
 
@@ -37,10 +37,9 @@ public:
   void visualizeGroupedPoints(const std::vector<pointList>& point_clusters);
   void LiDARmsg(const sensor_msgs::LaserScan::ConstPtr &);
 
-
   tf::TransformListener tf_listener;
-private:
 
+private:
   ros::Subscriber sub_scan;
   ros::Publisher pub_marker_array; 
   ros::Publisher clustering_res;
@@ -48,7 +47,6 @@ private:
   // ros::Publisher vis_pub;
   vector<Clusters> clusters;
   vector<pointList> point_clusters;
-
 
   //Tuning Parameteres
   double dt;
@@ -59,10 +57,11 @@ private:
   laser_geometry::LaserProjection projector_;
   sensor_msgs::LaserScan scan;
 
-
   unsigned long int cg       = 1;//group counter to be used as id of the clusters
   unsigned long int cclusters= 1;//counter for the cluster objects to be used as id for the markers
   string lidar_frame;
   string world_frame;
+  bool p_marker_pub;
+  
 };
 #endif
