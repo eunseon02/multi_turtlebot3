@@ -6,8 +6,8 @@
 
 #pragma once
 
-#define average 1
-#define median 2
+// #define average 1
+// #define median 2
 
 
 class Moving_Average {

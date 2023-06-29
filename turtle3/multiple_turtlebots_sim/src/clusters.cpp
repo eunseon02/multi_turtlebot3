@@ -7,6 +7,8 @@ Clusters::Clusters(unsigned long int id, const pointList& points, const double& 
   this->g = rand() / double(RAND_MAX);
   this->b = rand() / double(RAND_MAX);
 
+  calcMean(points);
+  this->num_points = points.size();
   populateTrackingMsgs(dt);
 }
 void Clusters::calcMean(const pointList& c){

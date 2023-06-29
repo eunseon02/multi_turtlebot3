@@ -13,23 +13,30 @@
 
 typedef std::pair<double, double> Point;
 typedef std::vector<Point> pointList;
+typedef std::vector<Point>::iterator PointIterator;
 
 class Clusters {
 public:    
-    Clusters(unsigned long int id, const pointList&, const double& dt);
+  Clusters(unsigned long int id, const pointList& points, const double& dt);
 
-    unsigned long int id; //identifier for the cluster 
-    float r, g, b, a; //color of the cluster
+  unsigned long int id; //identifier for the cluster 
+  float r, g, b, a; //color of the cluster
 
-    multiple_turtlebots_sim::Track msg_track;
-    void update(const pointList&, const double& dt);
+  multiple_turtlebots_sim::Track msg_track;
+  void update(const pointList&, const double& dt);
 
-    std::pair<double, double> mean() { return mean_values; }; //Return mean of cluster.
-    double meanX() { return mean_values.first; };
-    double meanY() { return mean_values.second;};
-    visualization_msgs::Marker getVisualisationMessage();
+  std::pair<double, double> mean() { return mean_values; }; //Return mean of cluster.
+  double meanX() { return mean_values.first; };
+  double meanY() { return mean_values.second;};
+  visualization_msgs::Marker getVisualisationMessage();
+  int num_points;
+
+  PointIterator begin, end; 
+  pointList points;
+
 
 private:
+
   std::pair<double, double> mean_values;
   void calcMean(const pointList& ); //Find the mean value of the cluster
   void populateTrackingMsgs(const double& dt);

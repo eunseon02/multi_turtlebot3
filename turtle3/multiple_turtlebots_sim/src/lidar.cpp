@@ -15,6 +15,7 @@ Tmo::Tmo(){
   pub_marker_array   = n.advertise<visualization_msgs::MarkerArray>("marker_array", 100);
   clustering_res = n.advertise<geometry_msgs::Polygon>("clustering_result", 100);
   laser_callback = n.advertise<sensor_msgs::LaserScan>("laser_call", 100);
+  obstacles_pub_ = n.advertise<multiple_turtlebots_sim::Obstacles>("raw_obstacles", 10);
   // vis_pub = n.advertise<visualization_msgs::Marker>("/temp_marker", 1);
 }
 
@@ -100,23 +101,28 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
   vector<pointList> point_clusters_not_transformed;
   Clustering(point_clusters_not_transformed, polar, c_points);   
   
-  //cluster info
-  for (size_t i = 0; i < point_clusters.size(); ++i) {
-    ROS_INFO_STREAM("Cluster " << i << ":");
-    for (const auto& point : point_clusters[i]) {
-      ROS_INFO_STREAM(" Point: x=" << point.first << ", y=" << point.second);
-    }
+  vector<pointList> point_clusters;
+  for (unsigned int i = 0; i < point_clusters_not_transformed.size(); ++i) {
+    pointList point_cluster;
+    point_clusters.push_back(point_clusters_not_transformed[i]);
   }
+
+  //cluster info
+  // for (size_t i = 0; i < point_clusters.size(); ++i) {
+  //   ROS_INFO_STREAM("Cluster " << i << ":");
+  //   for (const auto& point : point_clusters) {
+  //     ROS_INFO_STREAM(" Point: x=" << point.first << ", y=" << point.second);
+  //   }
+  // }
 
   // for (size_t i = 0; i < clusters.size(); ++i) {
   //   ROS_INFO_STREAM("Cluster " << i << ":");
-  //   for (const auto& point : clusters[i]) {
+  //   for (const auto& point : clusters) {
   //     ROS_INFO_STREAM(" Point: x=" << point.first << ", y=" << point.second);
   //   }
   // }
 
 //--------------------update adaptive threshold distance
-  vector<pointList> point_clusters;
   vector<bool> cluster_group(point_clusters.size(),false);   
   vector<bool> c_matched(clusters.size(),false);
 
@@ -134,7 +140,7 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
       sum_y = sum_y + point_clusters[g][l].second;
       std::ostringstream oss;
       oss << point_clusters[g][l].first << ", " << point_clusters[g][l].second;
-      ROS_INFO("%s", oss.str().c_str());
+      // ROS_INFO("%s", oss.str().c_str());
     }
     mean_x = sum_x / point_clusters[g].size();
     mean_y = sum_y / point_clusters[g].size();
@@ -143,6 +149,28 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
       euclidean[g][c] = abs( mean_x - clusters[c].meanX()) + abs(mean_y - clusters[c].meanY()); 
     }
   }
+
+  if (point_clusters.empty()) {
+  ROS_INFO("point_clusters is empty");
+  } else {
+    ROS_INFO("point_clusters has %zu elements", point_clusters.size());
+  }
+
+  if (clusters.empty()) {
+  ROS_INFO("clusters is empty");
+  } else {
+    ROS_INFO("clusters has %zu elements", clusters.size());
+  }
+
+  for (const auto& cluster : clusters) {
+    float r = cluster.r;
+    float g = cluster.g;
+    float b = cluster.b;
+    ROS_INFO("Cluster color: r=%.2f, g=%.2f, b=%.2f", r, g, b);
+  }
+
+
+
 //-------------------------------
 //-----------------------------Tracking
   // 점들 간 최소 거리 < 클러스터 내부 점들 간 최대 거리인 경우 같은 클러스터
@@ -189,7 +217,7 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 
   // Initialisation of new Cluster Objects
   for(unsigned int i=0; i<point_clusters.size();++i){
-    if(cluster_group[i] == false && point_clusters[i].size()< max_cluster_size){
+    if(cluster_group[i] == false && point_clusters.size()< max_cluster_size){
       Clusters cl(cclusters, point_clusters[i], dt);
       cclusters++;
       clusters.push_back(cl);
@@ -200,16 +228,15 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 
 
   //Visualizations and msg publications
-  // visualization_msgs::MarkerArray marker_array;
+  visualization_msgs::MarkerArray marker_array;
   // multiple_turtlebots_sim::TrackArray msg_track; 
-  // for (unsigned int i =0; i<clusters.size();i++){
-  //   msg_track.tracks.push_back(clusters[i].msg_track);
-  //   if (p_marker_pub){
-  //     marker_array.markers.push_back(clusters[i].getVisualisationMessage());
-  //   }; 
-  // }
-  // pub_marker_array.publish(marker_array);
-  visualizeGroupedPoints(Tmo::point_clusters);
+  for (unsigned int i =0; i<clusters.size();i++){
+    // msg_track.tracks.push_back(clusters[i].msg_track);
+    marker_array.markers.push_back(clusters[i].getVisualisationMessage());
+    pub_marker_array.publish(marker_array);
+  }
+
+  visualizeGroupedPoints(point_clusters);
 
 }
 
@@ -302,12 +329,11 @@ void Tmo::Clustering(vector<pointList> &clusters, vector< vector<float> > &polar
   }
   clusters.push_back(cluster);
   // ROS_INFO(typeid(clusters));
-  Tmo::point_clusters = clusters;
 
   // //cluster info
   // for (size_t i = 0; i < clusters.size(); ++i) {
   //   ROS_INFO_STREAM("Cluster " << i << ":");
-  //   for (const auto& point : clusters[i]) {
+  //   for (const auto& point : clusters) {
   //     ROS_INFO_STREAM(" Point: x=" << point.first << ", y=" << point.second);
   //   }
   // }
@@ -317,49 +343,21 @@ void Tmo::Clustering(vector<pointList> &clusters, vector< vector<float> > &polar
   // for (const auto& point : cluster) {
   //   ROS_INFO("x: %f, y: %f", point.first, point.second);
   // }
-  
 
-  //visualizeGroupedPoints(clusters);
 }
 }
 
 void Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters){
   ROS_INFO("pub_vist");
-  //ROS_INFO("pub_viswswt");
-  //ROS_INFO(point_clusters.size());
 
   for (size_t i = 0; i < point_clusters.size(); ++i) {
     ROS_INFO_STREAM("Cluster22 " << i << ":");
     for (const auto& point : point_clusters[i]) {
       ROS_INFO_STREAM(" Point22: x=" << point.first << ", y=" << point.second);
-      //ros::Duration(5).sleep();
     }
   }
 
   // if(point_clusters.size() == 0) ROS_INFO_STREAM("there's no point in clusters!");
-
-
-  // geometry_msgs::Polygon polygon_msg;
-
-  // for (const auto& polygon : point_clusters)
-  // {
-  //   //ROS_INFO("GET IN");
-  //   for (const auto& point : polygon)
-  //   {
-  //     geometry_msgs::Point32 msg_point;
-  //     msg_point.x = point.first;
-  //     msg_point.y = point.second;
-  //     // z, w 값도 필요한 경우 설정 가능
-  //     polygon_msg.points.push_back(msg_point);
-  //     //ROS_INFO("msg_point: (%f, %f)", msg_point.x, msg_point.y);
-  //   }
-  // }
-  // clustering_res.publish(polygon_msg);
-
-
-  // int num_subscribers = clustering_res.getNumSubscribers();
-  // ROS_INFO("Number of subscribers: %d", num_subscribers);
-  //ros::Rate r(30);
 
   visualization_msgs::MarkerArray marker_array;
 
@@ -387,7 +385,7 @@ void Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters){
     gpoints.color.a = 1.0; // 알파 값을 1.0-불투명도
     gpoints.lifetime = ros::Duration();
 
-    for(unsigned int j=0; j<point_clusters[i].size(); ++j){
+    for(unsigned int j=0; j<point_clusters.size(); ++j){
       geometry_msgs::Point p;
       p.x = point_clusters[i][j].first;
       p.y = point_clusters[i][j].second;
@@ -400,3 +398,101 @@ void Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters){
 
 }
 
+void Tmo::publishObstacles()
+{
+  const std::vector<pointList> point_clusters ;
+
+  //clusters -> segments
+  for (size_t i = 0; i < clusters.size(); ++i) {
+    //  Segment segment(*point_set.begin, *point_set.end);
+    Segment segment(*clusters[i].begin, *clusters[i].end);  // Use Iterative End Point Fit
+    segment = fitSegment(clusters);  
+    segments_.push_back(segment);    
+  }
+
+
+///////
+  multiple_turtlebots_sim::Obstacles obstacles_msg;
+  obstacles_msg.header.stamp = ros::Time::now();
+  tf::StampedTransform transform;
+
+
+  for (size_t i = 0; i < segments_.size(); ++i) {
+    const Segment& s = segments_[i];
+
+  }
+  for (size_t i = 0; i < segments_.size(); ++i) {
+    const Segment& s = segments_[i];
+    multiple_turtlebots_sim::SegmentObstacle segment;
+
+    segment.first_point.x = s.first_point.first;
+    segment.first_point.y = s.first_point.second;
+    segment.last_point.x = s.last_point.first;
+    segment.last_point.y = s.last_point.second;
+
+    obstacles_msg.segments.push_back(segment);
+  }
+  obstacles_pub_.publish(obstacles_msg);
+}
+
+Segment Tmo::fitSegment(const std::vector<Clusters>&  clusters) {
+  static int num_calls = 0;
+  num_calls++;
+
+  int N = 0;
+  for (Clusters cc : clusters)
+    N += cc.num_points;
+
+  assert(N >= 2);
+
+  arma::mat input  = arma::mat(N, 2).zeros();  // [x_i, y_i]
+  arma::vec output = arma::vec(N).ones();      // [-C]
+  arma::vec params = arma::vec(2).zeros();     // [A ; B]
+
+  int n = 0;
+  for (Clusters cc : clusters) {
+    PointIterator point = cc.begin;
+    for (int i = 0; i < cc.num_points; ++i) {
+      input(i + n, 0) = point->first;
+      input(i + n, 1) = point->second;
+      std::advance(point, 1);
+    }
+
+    n += cc.num_points;
+  }
+
+  // Find A and B coefficients from linear regression (assuming C = -1.0)
+  params = arma::pinv<arma::mat>(input) * output;
+
+
+
+  double A, B, C;
+  A = params(0);
+  B = params(1);
+  C = -1.0;
+
+  // Find end points
+  Point p1 = *clusters.front().begin;
+  Point p2 = *clusters.back().end;
+
+  Segment segment(p1, p2);
+  segment.clusters = clusters;
+
+  double D = (A * A + B * B);
+
+  // Project end points on the line
+  if (D > 0.0) {
+    Point projected_p1, projected_p2;
+
+    projected_p1.first = ( B * B * p1.first - A * B * p1.second - A * C) / D;
+    projected_p1.second = (-A * B * p1.first + A * A * p1.second - B * C) / D;
+
+    projected_p2.first = ( B * B * p2.first - A * B * p2.second - A * C) / D;
+    projected_p2.second = (-A * B * p2.first + A * A * p2.second - B * C) / D;
+
+    segment.first_point = projected_p1;
+    segment.last_point = projected_p2;
+  }
+
+   return segment;
+}
