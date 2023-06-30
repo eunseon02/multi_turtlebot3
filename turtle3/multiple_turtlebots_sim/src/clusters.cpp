@@ -15,27 +15,28 @@ Clusters::Clusters(unsigned long int id, const pointList& points, const double& 
 
   calcMean(points);
   previous_mean_values = mean_values;
-  Circlefitting(points, mean_values);
+  
 
   Tracker tracker_ukf(center_point.first, center_point.second, dt);
   this-> circle = tracker_ukf;
-
+  Circlefitting(points, mean_values);
   populateTrackingMsgs(dt);
 }
 
 void Clusters::update(const pointList& new_points, const double& dt) {
+  
   age++;
   previous_mean_values = mean_values;
   new_cluster = new_points;
 
   calcMean(new_points);
   Circlefitting(new_points, mean_values);
-  
+
   circle.update(mean_values.first, mean_values.second, dt, new_points.size());
-  
+
   this->calcMean(new_points);
 
-  // populateTrackingMsgs(dt);
+  populateTrackingMsgs(dt);
 }
 
 void Clusters::populateTrackingMsgs(const double& dt){
@@ -144,6 +145,7 @@ visualization_msgs::Marker Clusters::CircleVisualisationMessage() {
 
     return marker;
   }
+  std::vector<Circle> circles_;
 }
 
 void Clusters::calcMean(const pointList& c){

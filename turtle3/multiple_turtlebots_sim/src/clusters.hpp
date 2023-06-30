@@ -40,7 +40,7 @@ public:
   visualization_msgs::Marker CircleVisualisationMessage();
 
   int num_points;
-  double p_max_circle_radius_ = 0.5;
+  double p_max_circle_radius_ = 2.0;
   double radius;
 
   Tracker circle;

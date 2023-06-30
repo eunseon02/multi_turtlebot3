@@ -206,6 +206,7 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr &scan_in)
   {
     clusters[pairs[p].first].update(point_clusters[pairs[p].second], dt);
   }
+  // Clusters cl(clusters.id, clusters.points, dt);
 
   // Delete Clusters
   unsigned int o = 0;
@@ -244,16 +245,17 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr &scan_in)
   visualization_msgs::MarkerArray marker_array;
   multiple_turtlebots_sim::TrackArray msg_track;
   for (unsigned int i =0; i<clusters.size();i++){
+    // clusters[i].update(clusters[i].points, dt);
     msg_track.tracks.push_back(clusters[i].msg_track);
-
+    clusters[i].Circlefitting()
     marker_array.markers.push_back(clusters[i].getVisualisationMessage());
     marker_array.markers.push_back(clusters[i].CircleVisualisationMessage());
     // pub_marker_array.publish(marker_array);
   }
 
-  // for (unsigned int i =0; i<clusters.size();i++){
-  //   detectSegments(clusters[i]);
-  // }
+
+  
+
   pub_marker_array.publish(marker_array);
   pub_tracks_circle.publish(msg_track);
   visualizeGroupedPoints(point_clusters);
