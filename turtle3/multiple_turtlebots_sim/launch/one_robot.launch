@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <!-- Set arguments -->
     <arg name="init_pose"/>
@@ -12,8 +13,6 @@
           respawn="false" output="screen"/>
         
     <!-- Publich robot state -->
-    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen"/>
-      <param name="publish_frequency" type="double" value="50.0" />
-      <param name="tf_prefix" value="$(arg robot_name)" />
-
+    <node pkg="robot_state_publisher" type="robot_state_publisher"
+          name="robot_state_publisher" output="screen"/>
 </launch>
