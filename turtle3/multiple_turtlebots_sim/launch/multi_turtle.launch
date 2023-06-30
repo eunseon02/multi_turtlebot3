@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-
+    
+    
     <arg name="map_file" default="$(find multiple_turtlebots_sim)/map/map.yaml"/>
     <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
 
@@ -23,6 +24,6 @@
    
 
     <!-- rviz -->
-    <node name="rviz" pkg="rviz" type="rviz" required="true" args="-d $(find multiple_turtlebots_sim)/rviz/multi_carto.rviz" />
+    <node name="rviz" pkg="rviz" type="rviz" required="true" args="-d $(find multiple_turtlebots_sim)/rviz/track.rviz" />
 
 </launch>

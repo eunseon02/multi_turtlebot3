@@ -8,10 +8,9 @@ Panels:
         - /Status1
         - /MarkerArray1
         - /TF1/Frames1
-        - /LaserScan1
         - /Map1
         - /MarkerArray2
-        - /MarkerArray2/Status1
+        - /Marker1
       Splitter Ratio: 0.7746478915214539
     Tree Height: 666
   - Class: rviz/Selection
@@ -59,10 +58,10 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /marker_array
+      Marker Topic: /marker_array_t
       Name: MarkerArray
       Namespaces:
-        {}
+        clustered_point: true
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -128,6 +127,14 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: visualization_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -156,7 +163,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.453129768371582
+      Distance: 8.455496788024902
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -172,9 +179,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.45979642868042
+      Pitch: 1.5647963285446167
       Target Frame: <Fixed Frame>
-      Yaw: 3.1599981784820557
+      Yaw: 4.525001525878906
     Saved: ~
 Window Geometry:
   Displays:

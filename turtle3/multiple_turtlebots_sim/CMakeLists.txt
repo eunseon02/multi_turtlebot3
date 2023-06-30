@@ -6,6 +6,9 @@ add_compile_options(-std=c++11)
 
 
 # set(Armadillo_DIR "/usr/lib/cmake/armadillo")
+set(Eigen3_DIR "/usr/lib/cmake/eigen3")
+set(CMAKE_PREFIX_PATH "/usr/lib/cmake/eigen3" ${CMAKE_PREFIX_PATH})
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -20,6 +23,7 @@ find_package(catkin REQUIRED
             visualization_msgs
             message_generation
             )
+find_package(Eigen3 REQUIRED)
 # find_package(Armadillo REQUIRED)
 
 ## System dependencies are found with CMake's conventions
@@ -115,6 +119,7 @@ generate_messages(
   std_msgs
   visualization_msgs
 )
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -138,7 +143,9 @@ catkin_package(
 include_directories(
 # include
 ${catkin_INCLUDE_DIRS}
+${Eigen_INCLUDE_DIRS}
 )
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -169,6 +176,9 @@ add_executable(lidar
   src/lidar.cpp
   src/clusters.cpp
   src/main.cpp
+  src/circle.cpp
+  src/tracker.cpp
+  src/kalman-cpp/kalman.cpp
   # src/segment.cpp 
   # src/utils/MAF.cpp 
 )

@@ -1,20 +1,25 @@
 #ifndef LIDARKK
 #define LIDARKK
 
-#include "lidar.hpp"
 #include "clusters.hpp"
+#include "lidar.hpp"
+
 // #include "segment.hpp"
 
 #include <ros/ros.h>
 #include <iostream>
 #include <fstream>
+#include <vector>
+
+#include <tf/transform_listener.h>
+
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud.h>
 #include <laser_geometry/laser_geometry.h>
-#include <tf/transform_listener.h>
+
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <vector>
+
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Point32.h>
 #include <geometry_msgs/Polygon.h>
@@ -53,6 +58,7 @@ private:
   ros::Publisher pub_marker_array; 
   ros::Publisher clustering_res;
   ros::Publisher laser_callback;
+  ros::Publisher pub_tracks_circle;
   // ros::Publisher obstacles_pub_;
   // ros::Publisher vis_pub;
 

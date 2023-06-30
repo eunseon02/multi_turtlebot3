@@ -18,6 +18,7 @@ Tmo::Tmo()
   n_private.param("max_split_distance", p_max_split_distance_, 0.2);
 
   sub_scan = n.subscribe("/robot_2/scan", 1, &Tmo::callback, this);
+  pub_tracks_circle = n.advertise<multiple_turtlebots_sim::TrackArray>("datmo/circle", 10);
   pub_marker_array = n.advertise<visualization_msgs::MarkerArray>("marker_array_t", 100);
   clustering_res = n.advertise<geometry_msgs::Polygon>("clustering_result", 100);
   laser_callback = n.advertise<sensor_msgs::LaserScan>("laser_call", 100);
@@ -31,7 +32,6 @@ Tmo::~Tmo()
 
 void Tmo::callback(const sensor_msgs::LaserScan::ConstPtr &scan_in)
 {
-
   ROS_INFO("callback");
   // 유효한 데이터가 할당되었으므로 계속 진행
   LiDARmsg(scan_in);
@@ -242,16 +242,20 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr &scan_in)
 
   // Visualizations and msg publications
   visualization_msgs::MarkerArray marker_array;
-  // multiple_turtlebots_sim::TrackArray msg_track;
-  // for (unsigned int i =0; i<clusters.size();i++){
-  //   // msg_track.tracks.push_back(clusters[i].msg_track);
-  //   marker_array.markers.push_back(clusters[i].getVisualisationMessage());
-  //   pub_marker_array.publish(marker_array);
-  // }
+  multiple_turtlebots_sim::TrackArray msg_track;
+  for (unsigned int i =0; i<clusters.size();i++){
+    msg_track.tracks.push_back(clusters[i].msg_track);
+
+    marker_array.markers.push_back(clusters[i].getVisualisationMessage());
+    marker_array.markers.push_back(clusters[i].CircleVisualisationMessage());
+    // pub_marker_array.publish(marker_array);
+  }
 
   // for (unsigned int i =0; i<clusters.size();i++){
   //   detectSegments(clusters[i]);
   // }
+  pub_marker_array.publish(marker_array);
+  pub_tracks_circle.publish(msg_track);
   visualizeGroupedPoints(point_clusters);
 }
 
