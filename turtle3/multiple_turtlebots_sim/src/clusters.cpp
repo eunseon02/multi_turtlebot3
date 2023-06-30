@@ -8,8 +8,8 @@ Clusters::Clusters(unsigned long int id, const pointList& points, const double& 
   this->b = rand() / double(RAND_MAX);
 
   calcMean(points);
-  this->num_points = points.size();
-  populateTrackingMsgs(dt);
+  // this->num_points = points.size();
+  // populateTrackingMsgs(dt);
 }
 void Clusters::calcMean(const pointList& c){
 
@@ -27,14 +27,14 @@ void Clusters::calcMean(const pointList& c){
 void Clusters::update(const pointList& new_points, const double& dt) {
   this->calcMean(new_points);
 
-  populateTrackingMsgs(dt);
+  // populateTrackingMsgs(dt);
 }
-void Clusters::populateTrackingMsgs(const double& dt){
-  // This function populates the Tracks msgs.
-  msg_track.id = this->id;
-  msg_track.odom.header.stamp = ros::Time::now();
+// void Clusters::populateTrackingMsgs(const double& dt){
+//   // This function populates the Tracks msgs.
+//   msg_track.id = this->id;
+//   msg_track.odom.header.stamp = ros::Time::now();
 
-}
+// }
 visualization_msgs::Marker Clusters::getVisualisationMessage() {
 
   visualization_msgs::Marker bb_msg;

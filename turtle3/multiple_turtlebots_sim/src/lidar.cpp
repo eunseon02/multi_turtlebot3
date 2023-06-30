@@ -10,12 +10,18 @@ Tmo::Tmo(){
   n_private.param("lidar_frame", lidar_frame, string("laser"));
   n_private.param("world_frame", world_frame, string("map"));
   n_private.param("pub_markers", p_marker_pub, true);
+  n_private.param("use_split_and_merge", p_use_split_and_merge_, true);
+  n_private.param("min_group_points", p_min_group_points_, 5);
+  n_private.param("max_group_distance", p_max_group_distance_, 0.1);
+  n_private.param("distance_proportion", p_distance_proportion_, 0.00628);
+  n_private.param("max_split_distance", p_max_split_distance_, 0.2);
+  
 
   sub_scan = n.subscribe("/robot_2/scan", 1, &Tmo::callback, this);
   pub_marker_array   = n.advertise<visualization_msgs::MarkerArray>("marker_array", 100);
   clustering_res = n.advertise<geometry_msgs::Polygon>("clustering_result", 100);
   laser_callback = n.advertise<sensor_msgs::LaserScan>("laser_call", 100);
-  obstacles_pub_ = n.advertise<multiple_turtlebots_sim::Obstacles>("raw_obstacles", 10);
+  // obstacles_pub_ = n.advertise<multiple_turtlebots_sim::Obstacles>("raw_obstacles", 10);
   // vis_pub = n.advertise<visualization_msgs::Marker>("/temp_marker", 1);
 }
 
@@ -25,26 +31,8 @@ Tmo::~Tmo(){
 void Tmo::callback(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 
   ROS_INFO("callback");  
-  // if (scan_in == nullptr) {
-  //       ROS_ERROR("Invalid laser scan data received");
-  //       return;
-  //   }
-
-  //   if (scan_in->ranges.empty()) {
-  //       ROS_ERROR("Empty laser scan data received");
-  //       return;
-  //   }
-
   // 유효한 데이터가 할당되었으므로 계속 진행
   LiDARmsg(scan_in);
-  //visualizeGroupedPoints(clusters, clustering_res);
-  // ros::Rate rate(100);  
-  // while (ros::ok()) {
-  //   laser_callback.publish(scan_in);
-  //   // 루프 주기 대기
-  //   rate.sleep();
-  // }
-
 }
 void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
 //marker 초기화
@@ -58,6 +46,7 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
   // pub_marker_array.publish(markera);
 
   ROS_INFO("liarmsg");
+
 //-------------------
   scan = *scan_in;
 
@@ -230,12 +219,15 @@ void Tmo::LiDARmsg(const sensor_msgs::LaserScan::ConstPtr& scan_in){
   //Visualizations and msg publications
   visualization_msgs::MarkerArray marker_array;
   // multiple_turtlebots_sim::TrackArray msg_track; 
-  for (unsigned int i =0; i<clusters.size();i++){
-    // msg_track.tracks.push_back(clusters[i].msg_track);
-    marker_array.markers.push_back(clusters[i].getVisualisationMessage());
-    pub_marker_array.publish(marker_array);
-  }
+  // for (unsigned int i =0; i<clusters.size();i++){
+  //   // msg_track.tracks.push_back(clusters[i].msg_track);
+  //   marker_array.markers.push_back(clusters[i].getVisualisationMessage());
+  //   pub_marker_array.publish(marker_array);
+  // }
 
+  // for (unsigned int i =0; i<clusters.size();i++){
+  //   detectSegments(clusters[i]);
+  // }
   visualizeGroupedPoints(point_clusters);
 
 }
@@ -398,101 +390,169 @@ void Tmo::visualizeGroupedPoints(const std::vector<pointList>& point_clusters){
 
 }
 
-void Tmo::publishObstacles()
-{
-  const std::vector<pointList> point_clusters ;
+// void Tmo::detectSegments(const Clusters& cluster) {
 
-  //clusters -> segments
-  for (size_t i = 0; i < clusters.size(); ++i) {
-    //  Segment segment(*point_set.begin, *point_set.end);
-    Segment segment(*clusters[i].begin, *clusters[i].end);  // Use Iterative End Point Fit
-    segment = fitSegment(clusters);  
-    segments_.push_back(segment);    
-  }
+//   // 초당 프레임
+//   dt = 0.08;
 
+//   if (cluster.num_points < p_min_group_points_)
+//     return;
 
-///////
-  multiple_turtlebots_sim::Obstacles obstacles_msg;
-  obstacles_msg.header.stamp = ros::Time::now();
-  tf::StampedTransform transform;
+//   Segment segment(*cluster.begin, *cluster.end);  // Use Iterative End Point Fit
 
+//   if (p_use_split_and_merge_)
+//     segment = fitSegment(clusters);
 
-  for (size_t i = 0; i < segments_.size(); ++i) {
-    const Segment& s = segments_[i];
+//   PointIterator set_divider;
+//   double max_distance = 0.0;
+//   double distance     = 0.0;
 
-  }
-  for (size_t i = 0; i < segments_.size(); ++i) {
-    const Segment& s = segments_[i];
-    multiple_turtlebots_sim::SegmentObstacle segment;
+//   int split_index = 0; // Natural index of splitting point (counting from 1)
+//   int point_index = 0; // Natural index of current point in the set
 
-    segment.first_point.x = s.first_point.first;
-    segment.first_point.y = s.first_point.second;
-    segment.last_point.x = s.last_point.first;
-    segment.last_point.y = s.last_point.second;
+//   // Seek the point of division
+//   for (PointIterator point = cluster.begin; point != cluster.end; ++point) {
+//     ++point_index;
 
-    obstacles_msg.segments.push_back(segment);
-  }
-  obstacles_pub_.publish(obstacles_msg);
-}
+//     if ((distance = segment.distanceTo(*point)) >= max_distance) {
+//       double r = length(*point);
 
-Segment Tmo::fitSegment(const std::vector<Clusters>&  clusters) {
-  static int num_calls = 0;
-  num_calls++;
+//       if (distance > p_max_split_distance_ + r * p_distance_proportion_) {
+//         max_distance = distance;
+//         set_divider = point;
+//         split_index = point_index;
+//       }
+//     }
+//   }
 
-  int N = 0;
-  for (Clusters cc : clusters)
-    N += cc.num_points;
+//   // Split the set only if the sub-groups are not 'small'
+//   if (max_distance > 0.0 && split_index > p_min_group_points_ && split_index < cluster.num_points - p_min_group_points_) {
+//     set_divider = input_points_.insert(set_divider, *set_divider);  // Clone the dividing point for each group
 
-  assert(N >= 2);
+//     // Clusters subset1(), subset2();
+//     // subset1.begin = point_set.begin;
+//     // subset1.end = set_divider;
+//     // subset1.num_points = split_index;
+//     // subset1.is_visible = point_set.is_visible;
 
-  arma::mat input  = arma::mat(N, 2).zeros();  // [x_i, y_i]
-  arma::vec output = arma::vec(N).ones();      // [-C]
-  arma::vec params = arma::vec(2).zeros();     // [A ; B]
-
-  int n = 0;
-  for (Clusters cc : clusters) {
-    PointIterator point = cc.begin;
-    for (int i = 0; i < cc.num_points; ++i) {
-      input(i + n, 0) = point->first;
-      input(i + n, 1) = point->second;
-      std::advance(point, 1);
-    }
-
-    n += cc.num_points;
-  }
-
-  // Find A and B coefficients from linear regression (assuming C = -1.0)
-  params = arma::pinv<arma::mat>(input) * output;
+//     // subset2.begin = ++set_divider;
+//     // subset2.end = point_set.end;
+//     // subset2.num_points = point_set.num_points - split_index;
+//     // subset2.is_visible = point_set.is_visible;
 
 
+//   // Subset 1
+//   pointList subset1_points(cluster.begin, set_divider);
+//   Clusters subset1(cluster.id, subset1_points, dt);
 
-  double A, B, C;
-  A = params(0);
-  B = params(1);
-  C = -1.0;
+//   // Subset 2
+//   pointList subset2_points(set_divider, cluster.end);
+//   Clusters subset2(cluster.id, subset2_points, dt);
 
-  // Find end points
-  Point p1 = *clusters.front().begin;
-  Point p2 = *clusters.back().end;
+//   detectSegments(subset1);
+//   detectSegments(subset2);
+//   } else {  // Add the segment
+//     if (!p_use_split_and_merge_)
+//       segment = fitSegment(clusters);
 
-  Segment segment(p1, p2);
-  segment.clusters = clusters;
+//     segments_.push_back(segment);
+//   }
+// }
 
-  double D = (A * A + B * B);
+// void Tmo::publishObstacles()
+// {
+//   const std::vector<pointList> point_clusters ;
 
-  // Project end points on the line
-  if (D > 0.0) {
-    Point projected_p1, projected_p2;
+//   //clusters -> segments
+//   for (size_t i = 0; i < clusters.size(); ++i) {
+//     //  Segment segment(*point_set.begin, *point_set.end);
+//     Segment segment(*clusters[i].begin, *clusters[i].end);  // Use Iterative End Point Fit
+//     segment = fitSegment(clusters);  
+//     segments_.push_back(segment);    
+//   }
 
-    projected_p1.first = ( B * B * p1.first - A * B * p1.second - A * C) / D;
-    projected_p1.second = (-A * B * p1.first + A * A * p1.second - B * C) / D;
+//   ///////
+//   multiple_turtlebots_sim::Obstacles obstacles_msg;
+//   obstacles_msg.header.stamp = ros::Time::now();
+//   tf::StampedTransform transform;
 
-    projected_p2.first = ( B * B * p2.first - A * B * p2.second - A * C) / D;
-    projected_p2.second = (-A * B * p2.first + A * A * p2.second - B * C) / D;
+//   for (size_t i = 0; i < segments_.size(); ++i) {
+//     const Segment& s = segments_[i];
 
-    segment.first_point = projected_p1;
-    segment.last_point = projected_p2;
-  }
+//   }
+//   for (size_t i = 0; i < segments_.size(); ++i) {
+//     const Segment& s = segments_[i];
+//     multiple_turtlebots_sim::SegmentObstacle segment;
 
-   return segment;
-}
+//     segment.first_point.x = s.first_point.first;
+//     segment.first_point.y = s.first_point.second;
+//     segment.last_point.x = s.last_point.first;
+//     segment.last_point.y = s.last_point.second;
+
+//     obstacles_msg.segments.push_back(segment);
+//   }
+//   obstacles_pub_.publish(obstacles_msg);
+// }
+
+// Segment Tmo::fitSegment(const std::vector<Clusters>&  clusters) {
+//   static int num_calls = 0;
+//   num_calls++;
+
+//   int N = 0;
+//   for (Clusters cc : clusters)
+//     N += cc.num_points;
+
+//   assert(N >= 2);
+
+//   arma::mat input  = arma::mat(N, 2).zeros();  // [x_i, y_i]
+//   arma::vec output = arma::vec(N).ones();      // [-C]
+//   arma::vec params = arma::vec(2).zeros();     // [A ; B]
+
+//   int n = 0;
+//   for (Clusters cc : clusters) {
+//     PointIterator point = cc.begin;
+//     for (int i = 0; i < cc.num_points; ++i) {
+//       input(i + n, 0) = point->first;
+//       input(i + n, 1) = point->second;
+//       std::advance(point, 1);
+//     }
+
+//     n += cc.num_points;
+//   }
+
+//   // Find A and B coefficients from linear regression (assuming C = -1.0)
+//   params = arma::pinv<arma::mat>(input) * output;
+
+
+
+//   double A, B, C;
+//   A = params(0);
+//   B = params(1);
+//   C = -1.0;
+
+//   // Find end points
+//   Point p1 = *clusters.front().begin;
+//   Point p2 = *clusters.back().end;
+
+//   Segment segment(p1, p2);
+//   segment.clusters = clusters;
+
+//   double D = (A * A + B * B);
+
+//   // Project end points on the line
+//   if (D > 0.0) {
+//     Point projected_p1, projected_p2;
+
+//     projected_p1.first = ( B * B * p1.first - A * B * p1.second - A * C) / D;
+//     projected_p1.second = (-A * B * p1.first + A * A * p1.second - B * C) / D;
+
+//     projected_p2.first = ( B * B * p2.first - A * B * p2.second - A * C) / D;
+//     projected_p2.second = (-A * B * p2.first + A * A * p2.second - B * C) / D;
+
+//     segment.first_point = projected_p1;
+//     segment.last_point = projected_p2;
+//   }
+
+//    return segmnet;
+// }
+

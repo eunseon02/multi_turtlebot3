@@ -39,7 +39,7 @@ private:
 
   std::pair<double, double> mean_values;
   void calcMean(const pointList& ); //Find the mean value of the cluster
-  void populateTrackingMsgs(const double& dt);
+  // void populateTrackingMsgs(const double& dt);
 };
 
 #endif

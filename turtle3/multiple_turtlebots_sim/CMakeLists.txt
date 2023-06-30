@@ -5,7 +5,7 @@ project(multiple_turtlebots_sim)
 add_compile_options(-std=c++11)
 
 
-set(Armadillo_DIR "/usr/lib/cmake/armadillo")
+# set(Armadillo_DIR "/usr/lib/cmake/armadillo")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -20,7 +20,7 @@ find_package(catkin REQUIRED
             visualization_msgs
             message_generation
             )
-find_package(Armadillo REQUIRED)
+# find_package(Armadillo REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -106,8 +106,8 @@ add_message_files(
   FILES
   Track.msg
   TrackArray.msg
-  SegmentObstacle.msg
-  Obstacles.msg
+  # SegmentObstacle.msg
+  # Obstacles.msg
 )
 generate_messages(
   DEPENDENCIES
@@ -169,8 +169,8 @@ add_executable(lidar
   src/lidar.cpp
   src/clusters.cpp
   src/main.cpp
-  src/segment.cpp 
-  src/utils/MAF.cpp 
+  # src/segment.cpp 
+  # src/utils/MAF.cpp 
 )
 
 # add_executable(test_node
@@ -211,7 +211,7 @@ add_executable(lidar
 # target_link_libraries(lidar ${catkin_LIBRARIES})
 target_link_libraries(lidar
   ${catkin_LIBRARIES}
-  ${ARMADILLO_LIBRARIES}
+  # ${ARMADILLO_LIBRARIES}
 )
 
 # target_link_libraries(test_node ${catkin_LIBRARIES})
