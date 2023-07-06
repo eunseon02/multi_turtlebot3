@@ -30,3 +30,11 @@ LiDAR 센서로부터 데이터는 극좌표계로 획득되어 이를 직각 �
 - Unscented Kalman Filter
 - 
   $$x_CTM =  \begin{bmatrix} x& y& v_x&v_y& \omega  \end{bmatrix} ^T$$
+
+
+
+실행방법
+-Turtlebot3 관련 패키지 다운로드
+workspace directory에서 
+roslaunch multiple_turtlebots_sim multi_robot.launch
+roslaunch multiple_turtlebots_sim lidar.launch
