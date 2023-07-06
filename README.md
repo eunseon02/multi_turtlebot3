@@ -25,4 +25,5 @@ LiDAR 센서로부터 데이터는 극좌표계로 획득되어 이를 직각 �
 로봇에 장착된 센서만으로 주변 동적/정적 객체의 위치를 추정하는 과정이 필요하다. 하지만 이러한 위치 추정은 센서 관측정보가 불확실하다는 점과 실제 우리 환경에서 동작하기 위하여 실시간성을 확보해야 한다는 점 등 많은 문제점을 가지고 있다. Kalman Filter는 연산 과정이 빠르기 때문에 실시간 문제 및 임베디드 시스템의 여러 분야에서 자주 사용되고 있어 LiDAR를 통해 인식한 객체의 위치 추정하기 위해 Kalman Filter를 선정하였다. 추정은 입력된 자료가 불완전하거나 불확실하더라도 사용할 수 있는 계산된 결과의 근삿값을 말한다. 선형 시스템에서 추정 시 Kalman Filter를 이용하고 비선형 시스템 추정 시 Unscented Kalman Filter를 이용한다. 다만 Kalman Filter만으로는 객체의 위치와 속도를 정확하게 알아내기는 어렵다. 대신 실제 속도와 위치가 어느 범위 안에 속한다는 것 정도는 예측할 수 있다.
 
 - Unscented Kalman Filter
-  $x_CTM =  \begin{bmatrix} x& y& v_x&v_y& \omega  \end{bmatrix} ^T$
+- 
+  $$x_CTM =  \begin{bmatrix} x& y& v_x&v_y& \omega  \end{bmatrix} ^T$$
