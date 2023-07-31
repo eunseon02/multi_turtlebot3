@@ -33,8 +33,18 @@ LiDAR 센서로부터 데이터는 극좌표계로 획득되어 이를 직각 �
 
 
 
+
+
 실행방법
 -Turtlebot3 관련 패키지 다운로드
 workspace directory에서 
 roslaunch multiple_turtlebots_sim multi_robot.launch
 roslaunch multiple_turtlebots_sim lidar.launch
+
+##구현 영상
+
+
+
+https://github.com/eunseon02/multi_turtlebot3/assets/108911413/cc826f3b-c4d4-47c7-a01b-20741281c243
+
+
